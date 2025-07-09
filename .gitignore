@@ -1,22 +1,276 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
+# ===============================================
+# .gitignore - Sistema Erlene Advogados
+# ===============================================
+
+# ===== ARQUIVOS DE AMBIENTE =====
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.backup
+
+# ===== LOGS =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ===== CACHE E TEMPORÁRIOS =====
+cache/
+temp/
+tmp/
+*.tmp
+*.temp
+.cache/
+
+# ===== NODE.JS =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.yarnrc
+
+# ===== PHP/LARAVEL =====
+vendor/
+.phpunit.result.cache
+.phpunit.cache
+bootstrap/cache/*.php
+storage/app/*
+!storage/app/.gitkeep
+!storage/app/public/
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+storage/logs/*
+!storage/logs/.gitkeep
+
+# ===== REACT/FRONTEND =====
+build/
+dist/
+.next/
+out/
+coverage/
+.nyc_output
+.parcel-cache/
+
+# ===== REACT NATIVE/MOBILE =====
+.expo/
+.expo-shared/
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# ===== DOCKER =====
+.docker/
+*.dockerignore
+
+# ===== BANCO DE DADOS =====
+*.sqlite
+*.sqlite3
+*.db
+*.mdb
+*.accdb
+database/*.sqlite
+database/*.sqlite3
+
+# ===== UPLOADS E ARQUIVOS =====
+uploads/
+public/uploads/
+storage/app/public/uploads/
+public/storage/
+backups/
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# ===== CERTIFICADOS SSL =====
+ssl/
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+
+# ===== IDE E EDITORES =====
 .vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-file
-*.flf
-#Test results file
-TestResults.xml
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== CONFIGURAÇÕES LOCAIS =====
+config/local.php
+config/local.json
+config/development.local.php
+.htaccess.local
+
+# ===== CHAVES E TOKENS =====
+*.env
+*_rsa
+*_rsa.pub
+oauth-*.json
+google-service-account.json
+firebase-adminsdk-*.json
+
+# ===== DOCUMENTAÇÃO GERADA =====
+docs/build/
+docs/dist/
+docs/.docusaurus/
+
+# ===== TESTES =====
+coverage/
+.nyc_output/
+junit.xml
+.phpunit.result.cache
+tests/_output/*
+tests/_support/_generated
+
+# ===== FERRAMENTAS DE BUILD =====
+*.bundle.*
+lib/
+dll/
+manifest.json
+
+# ===== SISTEMA OPERACIONAL =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.lnk
+
+# ===== ANDROID =====
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# ===== iOS =====
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+ios/.xcode.env.local
+
+# ===== EXPO =====
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# ===== COMPOSER =====
+composer.phar
+/vendor/
+composer.lock
+
+# ===== YARN =====
+yarn.lock
+.yarn/
+.pnp.*
+
+# ===== BACKUP E EXPORTS =====
+*.sql
+*.dump
+backup-*
+export-*
+*.backup
+
+# ===== MONITORING =====
+monitoring/data/
+monitoring/logs/
+
+# ===== CUSTOM ERLENE SYSTEM =====
+storage/clients/
+storage/documents/
+storage/exports/
+storage/imports/
+storage/temp/
+
+# ===== INTEGRAÇÕES =====
+integrations/tokens/
+integrations/cache/
+google-credentials.json
+microsoft-credentials.json
+stripe-webhooks.log
+mercadopago-webhooks.log
+
+# ===== DEVELOPMENT TOOLS =====
+.phpunit.cache
+.php-cs-fixer.cache
+.psalm/
+.phpstan/
+
+# ===== PRODUCTION SECRETS =====
+production.key
+staging.key
+*.production
+*.staging
+
+# ===== MISC =====
+*.lock
+.vercel
+.netlify
+.env.build
+.env.production.local
+.env.development.local
+.env.local
+
+# ===== SEMPRE INCLUIR =====
+!.gitkeep
+!.htaccess
+!web.config
