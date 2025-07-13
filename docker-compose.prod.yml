@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: erlene-php-prod
+    restart: always
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    volumes:
+      - ./backend:/var/www/html:ro
+      - php_storage:/var/www/html/storage
+    networks:
+      - erlene-network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: erlene-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./frontend/build:/var/www/frontend:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - erlene-network
+    depends_on:
+      - php
+
+  mysql:
+    build:
+      context: .
+      dockerfile: docker/mysql/Dockerfile
+    container_name: erlene-mysql-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+      - mysql_backups:/backups
+    networks:
+      - erlene-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: erlene-redis-prod
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - erlene-network
+
+volumes:
+  php_storage:
+  nginx_logs:
+  mysql_data_prod:
+  mysql_backups:
+  redis_data_prod:
+
+networks:
+  erlene-network:
+    driver: bridge

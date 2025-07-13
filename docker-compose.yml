@@ -1,100 +1,122 @@
 version: '3.8'
 
 services:
-  # MySQL Database - Porta Alta
-  mysql:
-    image: mysql:8.0
-    container_name: erlene_mysql
-    restart: unless-stopped
-    ports:
-      - "33006:3306"  # Porta alta para MySQL
-    environment:
-      MYSQL_DATABASE: erlene_advogados
-      MYSQL_ROOT_PASSWORD: erlene2024@root
-      MYSQL_USER: erlene_user
-      MYSQL_PASSWORD: erlene2024@user
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-    networks:
-      - erlene_network
-
-  # PHP/Laravel Backend - Porta Alta
-  backend:
+  # PHP-FPM Backend
+  php:
     build:
-      context: ./docker/php
-      dockerfile: Dockerfile
-    container_name: erlene_backend
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: erlene-php
     restart: unless-stopped
-    ports:
-      - "9001:9000"  # Porta alta para PHP-FPM
+    working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
-      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+    environment:
+      - PHP_IDE_CONFIG=serverName=erlene-docker
+    networks:
+      - erlene-network
     depends_on:
       - mysql
-    networks:
-      - erlene_network
-    environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=erlene_advogados
-      - DB_USERNAME=erlene_user
-      - DB_PASSWORD=erlene2024@user
+      - redis
 
-  # Nginx Web Server - Porta Alta
+  # Nginx Web Server
   nginx:
     build:
-      context: ./docker/nginx
-      dockerfile: Dockerfile
-    container_name: erlene_nginx
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: erlene-nginx
     restart: unless-stopped
     ports:
-      - "8080:80"   # Porta alta para HTTP
-      - "8443:443"  # Porta alta para HTTPS
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./backend:/var/www/html
       - ./frontend/build:/var/www/frontend
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./ssl:/etc/ssl/certs
-    depends_on:
-      - backend
+      - ./docker/nginx/ssl.conf:/etc/nginx/conf.d/ssl.conf
+      - ./storage/logs/nginx:/var/log/nginx
     networks:
-      - erlene_network
+      - erlene-network
+    depends_on:
+      - php
 
-  # React Frontend (Desenvolvimento)
-  frontend:
+  # MySQL Database
+  mysql:
     build:
-      context: ./docker/node
-      dockerfile: Dockerfile
-    container_name: erlene_frontend
+      context: .
+      dockerfile: docker/mysql/Dockerfile
+    container_name: erlene-mysql
     restart: unless-stopped
     ports:
-      - "3000:3000"  # Porta padrão React (dev)
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: erlene_root_password
+      MYSQL_DATABASE: erlene_advogados
+      MYSQL_USER: erlene_user
+      MYSQL_PASSWORD: erlene_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./storage/backups/mysql:/backups
+    networks:
+      - erlene-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: erlene-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass erlene_redis_password
+    volumes:
+      - redis_data:/data
+    networks:
+      - erlene-network
+
+  # Node.js para Frontend
+  node:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    container_name: erlene-node
+    restart: unless-stopped
+    working_dir: /app
     volumes:
       - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - erlene_network
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
     environment:
+      - NODE_ENV=development
       - REACT_APP_API_URL=http://localhost:8080/api
-      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - erlene-network
+    command: npm start
 
-  # Redis Cache (Opcional)
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: erlene_redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - erlene_network
+  # Mailpit (Email Testing)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: erlene-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - erlene-network
 
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  node_modules:
+    driver: local
 
 networks:
-  erlene_network:
+  erlene-network:
     driver: bridge

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "9000:9000"
+
+  mysql:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: erlene_advogados
+      MYSQL_USER: erlene_user
+      MYSQL_PASSWORD: password
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: erlene-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    networks:
+      - erlene-network
+    depends_on:
+      - mysql
+
+extends:
+  file: docker-compose.yml
+  service: php
