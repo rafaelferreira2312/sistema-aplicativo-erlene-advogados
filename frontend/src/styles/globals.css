@@ -1,0 +1,23 @@
+/* Estilos globais básicos */
+
+/* Cores Erlene */
+:root {
+  --primary-50: #fef2f2;
+  --primary-500: #8B1538;
+  --primary-600: #7a1230;
+  --primary-700: #691028;
+  --primary-800: #580e20;
+  --primary-900: #470c18;
+}
+
+.bg-gradient-erlene {
+  background: linear-gradient(135deg, #8B1538 0%, #A91E47 100%);
+}
+
+.text-primary-600 {
+  color: #8B1538;
+}
+
+.border-primary-500 {
+  border-color: #8B1538;
+}

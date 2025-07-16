@@ -17,36 +17,22 @@ module.exports = {
   },
   style: {
     postcss: {
-      plugins: [
-        require('tailwindcss'),
-        require('autoprefixer')
-      ]
-    }
+      mode: 'extends',
+      loaderOptions: {
+        postcssOptions: {
+          ident: 'postcss',
+          plugins: [
+            require('tailwindcss'),
+            require('autoprefixer'),
+          ],
+        },
+      },
+    },
   },
   devServer: {
     port: 3000,
-    open: true,
+    open: false,
     hot: true,
-    historyApiFallback: true,
-    proxy: {
-      '/api': {
-        target: 'https://localhost:8443',
-        changeOrigin: true,
-        secure: false
-      }
-    }
-  },
-  jest: {
-    configure: {
-      moduleNameMapping: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-        '^@components/(.*)$': '<rootDir>/src/components/$1',
-        '^@pages/(.*)$': '<rootDir>/src/pages/$1',
-        '^@services/(.*)$': '<rootDir>/src/services/$1',
-        '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-        '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
-        '^@context/(.*)$': '<rootDir>/src/context/$1'
-      }
-    }
+    historyApiFallback: true
   }
 };
