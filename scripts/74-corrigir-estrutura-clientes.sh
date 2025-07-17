@@ -1,3 +1,47 @@
+#!/bin/bash
+
+# Script 74 - Corrigir Estrutura de Clientes (Mover para .js)
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+
+echo "🔧 Corrigindo estrutura de clientes - movendo para Clients.js..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+# Verificar estrutura frontend
+if [ ! -d "frontend/src/pages/admin" ]; then
+    echo "❌ Erro: Estrutura frontend não encontrada"
+    exit 1
+fi
+
+echo "📁 Fazendo backup e movendo arquivos..."
+
+# Fazer backup do Clients.js atual
+if [ -f "frontend/src/pages/admin/Clients.js" ]; then
+    cp frontend/src/pages/admin/Clients.js frontend/src/pages/admin/Clients.js.backup
+    echo "✅ Backup criado: Clients.js.backup"
+fi
+
+# Verificar se existe a pasta Clients com index.js
+if [ -f "frontend/src/pages/admin/Clients/index.js" ]; then
+    echo "✅ Encontrada página completa em: Clients/index.js"
+    
+    # Copiar conteúdo da pasta para o arquivo .js
+    cp frontend/src/pages/admin/Clients/index.js frontend/src/pages/admin/Clients.js
+    echo "✅ Conteúdo copiado para: Clients.js"
+    
+    # Remover pasta Clients
+    rm -rf frontend/src/pages/admin/Clients/
+    echo "✅ Pasta Clients/ removida"
+else
+    echo "⚠️  Pasta Clients/index.js não encontrada - criando página completa..."
+    
+    # Criar página completa no Clients.js
+    cat > frontend/src/pages/admin/Clients.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -7,7 +51,9 @@ import {
   TrashIcon,
   EyeIcon,
   UserIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  ArrowUpIcon,
+  ArrowDownIcon
 } from '@heroicons/react/24/outline';
 
 const Clients = () => {
@@ -62,6 +108,17 @@ const Clients = () => {
       status: 'Ativo',
       createdAt: '2024-02-10',
       processes: 8
+    },
+    {
+      id: 5,
+      name: 'Ana Costa Advocacia',
+      document: '11.222.333/0001-44',
+      email: 'ana@costa.adv.br',
+      phone: '(11) 5555-5555',
+      type: 'PJ',
+      status: 'Ativo',
+      createdAt: '2024-02-15',
+      processes: 12
     }
   ];
 
@@ -71,15 +128,47 @@ const Clients = () => {
       setClients(mockClients);
       setLoading(false);
     }, 1000);
-  }, [mockClients]);
+  }, []);
 
   // Calcular estatísticas
-  const stats = {
-    total: clients.length,
-    active: clients.filter(c => c.status === 'Ativo').length,
-    pf: clients.filter(c => c.type === 'PF').length,
-    pj: clients.filter(c => c.type === 'PJ').length
-  };
+  const stats = [
+    {
+      name: 'Total de Clientes',
+      value: clients.length.toString(),
+      change: '+12%',
+      changeType: 'increase',
+      icon: UserIcon,
+      color: 'blue',
+      description: 'Cadastrados no sistema'
+    },
+    {
+      name: 'Clientes Ativos',
+      value: clients.filter(c => c.status === 'Ativo').length.toString(),
+      change: '+8%',
+      changeType: 'increase',
+      icon: UserIcon,
+      color: 'green',
+      description: 'Com processos em andamento'
+    },
+    {
+      name: 'Pessoa Física',
+      value: clients.filter(c => c.type === 'PF').length.toString(),
+      change: '+15%',
+      changeType: 'increase',
+      icon: UserIcon,
+      color: 'yellow',
+      description: 'CPF cadastrados'
+    },
+    {
+      name: 'Pessoa Jurídica',
+      value: clients.filter(c => c.type === 'PJ').length.toString(),
+      change: '+5%',
+      changeType: 'increase',
+      icon: BuildingOfficeIcon,
+      color: 'purple',
+      description: 'CNPJ cadastrados'
+    }
+  ];
 
   // Filtrar clientes
   const filteredClients = clients.filter(client => {
@@ -98,6 +187,14 @@ const Clients = () => {
       setClients(prev => prev.filter(client => client.id !== id));
     }
   };
+
+  // Ações rápidas
+  const quickActions = [
+    { title: 'Novo Cliente', icon: '👤', color: 'blue', href: '/admin/clientes/novo' },
+    { title: 'Importar Clientes', icon: '📥', color: 'green', href: '/admin/clientes/importar' },
+    { title: 'Relatório de Clientes', icon: '📊', color: 'purple', href: '/admin/relatorios/clientes' },
+    { title: 'Exportar Lista', icon: '📤', color: 'yellow', href: '/admin/clientes/exportar' }
+  ];
 
   if (loading) {
     return (
@@ -123,84 +220,109 @@ const Clients = () => {
     <div className="space-y-8">
       {/* Header seguindo padrão Dashboard */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Gestão de Clientes</h1>
         <p className="mt-2 text-lg text-gray-600">
-          Gerencie todos os clientes do escritório
+          Gerencie todos os clientes do escritório com facilidade
         </p>
       </div>
 
       {/* Stats Cards seguindo EXATO padrão Dashboard */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-blue-100">
-                  <UserIcon className="h-6 w-6 text-blue-600" />
+        {stats.map((item) => (
+          <div key={item.name} className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={`p-3 rounded-lg bg-${item.color}-100`}>
+                    <item.icon className={`h-6 w-6 text-${item.color}-600`} />
+                  </div>
+                </div>
+                <div className={`flex items-center text-sm font-semibold ${
+                  item.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {item.changeType === 'increase' ? (
+                    <ArrowUpIcon className="h-4 w-4 mr-1" />
+                  ) : (
+                    <ArrowDownIcon className="h-4 w-4 mr-1" />
+                  )}
+                  {item.change}
                 </div>
               </div>
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-500">{item.name}</h3>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{item.value}</p>
+                <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+              </div>
             </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Total de Clientes</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
-              <p className="text-sm text-gray-500 mt-1">Cadastrados no sistema</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Ações Rápidas */}
+        <div className="lg:col-span-2">
+          <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Ações Rápidas</h2>
+              <EyeIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.title}
+                  to={action.href}
+                  className="group flex flex-col items-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-200"
+                >
+                  <span className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-200">
+                    {action.icon}
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-primary-700">
+                    {action.title}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-green-100">
-                  <UserIcon className="h-6 w-6 text-green-600" />
+
+        {/* Filtros Rápidos */}
+        <div>
+          <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Filtros Rápidos</h2>
+              <PlusIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="space-y-4">
+              <button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-900">Clientes Ativos</span>
+                  <span className="text-primary-600 font-semibold">{clients.filter(c => c.status === 'Ativo').length}</span>
                 </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Clientes Ativos</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.active}</p>
-              <p className="text-sm text-gray-500 mt-1">Com processos em andamento</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-yellow-100">
-                  <UserIcon className="h-6 w-6 text-yellow-600" />
+              </button>
+              <button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-900">Pessoa Física</span>
+                  <span className="text-blue-600 font-semibold">{clients.filter(c => c.type === 'PF').length}</span>
                 </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Pessoa Física</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pf}</p>
-              <p className="text-sm text-gray-500 mt-1">CPF cadastrados</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-purple-100">
-                  <BuildingOfficeIcon className="h-6 w-6 text-purple-600" />
+              </button>
+              <button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-900">Pessoa Jurídica</span>
+                  <span className="text-purple-600 font-semibold">{clients.filter(c => c.type === 'PJ').length}</span>
                 </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Pessoa Jurídica</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pj}</p>
-              <p className="text-sm text-gray-500 mt-1">CNPJ cadastrados</p>
+              </button>
+              <button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-900">Novos (30 dias)</span>
+                  <span className="text-green-600 font-semibold">2</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filtros e Ações */}
+      {/* Lista de Clientes */}
       <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Lista de Clientes</h2>
@@ -312,18 +434,23 @@ const Clients = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Visualizar"
+                      >
                         <EyeIcon className="w-5 h-5" />
                       </button>
                       <Link
-                        to={`/admin/clientes/${client.id}`}
+                        to={`/admin/clientes/${client.id}/editar`}
                         className="text-primary-600 hover:text-primary-900"
+                        title="Editar"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </Link>
                       <button
                         onClick={() => handleDelete(client.id)}
                         className="text-red-600 hover:text-red-900"
+                        title="Excluir"
                       >
                         <TrashIcon className="w-5 h-5" />
                       </button>
@@ -352,3 +479,26 @@ const Clients = () => {
 };
 
 export default Clients;
+EOF
+fi
+
+echo ""
+echo "✅ ESTRUTURA CORRIGIDA!"
+echo ""
+echo "📁 ARQUIVOS ATUALIZADOS:"
+echo "   • frontend/src/pages/admin/Clients.js (página completa)"
+echo "   • Pasta frontend/src/pages/admin/Clients/ removida"
+echo ""
+echo "🎨 PÁGINA COMPLETA INCLUI:"
+echo "   • Dashboard com estatísticas"
+echo "   • Cards de ações rápidas"
+echo "   • Filtros inteligentes"
+echo "   • Lista completa de clientes"
+echo "   • Botões para cadastro/edição/exclusão"
+echo "   • Design seguindo padrão Erlene"
+echo ""
+echo "🔗 TESTE:"
+echo "   • http://localhost:3000/admin/clientes"
+echo ""
+echo "💾 BACKUP SALVO:"
+echo "   • frontend/src/pages/admin/Clients.js.backup"

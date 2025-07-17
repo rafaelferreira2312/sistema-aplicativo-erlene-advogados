@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   PlusIcon,
   MagnifyingGlassIcon,
+  FunnelIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
@@ -10,14 +11,14 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 
-const Clients = () => {
+const ClientList = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Mock data seguindo padrão do Dashboard
+  // Mock data
   const mockClients = [
     {
       id: 1,
@@ -66,12 +67,12 @@ const Clients = () => {
   ];
 
   useEffect(() => {
-    // Simular carregamento seguindo padrão
+    // Simular carregamento
     setTimeout(() => {
       setClients(mockClients);
       setLoading(false);
     }, 1000);
-  }, [mockClients]);
+  }, []);
 
   // Calcular estatísticas
   const stats = {
@@ -101,14 +102,16 @@ const Clients = () => {
 
   if (loading) {
     return (
-      <div className="space-y-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100 p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
               <div className="h-12 bg-gray-200 rounded mb-4"></div>
               <div className="h-6 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -120,135 +123,116 @@ const Clients = () => {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header seguindo padrão Dashboard */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
-        <p className="mt-2 text-lg text-gray-600">
-          Gerencie todos os clientes do escritório
-        </p>
-      </div>
-
-      {/* Stats Cards seguindo EXATO padrão Dashboard */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-blue-100">
-                  <UserIcon className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Total de Clientes</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
-              <p className="text-sm text-gray-500 mt-1">Cadastrados no sistema</p>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white shadow-sm rounded-lg p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+            <p className="text-gray-600 mt-1">Gerencie todos os clientes do escritório</p>
           </div>
-        </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-green-100">
-                  <UserIcon className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Clientes Ativos</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.active}</p>
-              <p className="text-sm text-gray-500 mt-1">Com processos em andamento</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-yellow-100">
-                  <UserIcon className="h-6 w-6 text-yellow-600" />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Pessoa Física</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pf}</p>
-              <p className="text-sm text-gray-500 mt-1">CPF cadastrados</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white overflow-hidden shadow-erlene rounded-xl border border-gray-100">
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-purple-100">
-                  <BuildingOfficeIcon className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-500">Pessoa Jurídica</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pj}</p>
-              <p className="text-sm text-gray-500 mt-1">CNPJ cadastrados</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filtros e Ações */}
-      <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Lista de Clientes</h2>
           <Link
-            to="/admin/clientes/novo"
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            to="/admin/clients/new"
+            className="inline-flex items-center px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
             Novo Cliente
           </Link>
         </div>
+      </div>
+
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-blue-100">
+              <UserIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
         
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-green-100">
+              <UserIcon className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Ativos</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-yellow-100">
+              <UserIcon className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Pessoa Física</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.pf}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-purple-100">
+              <BuildingOfficeIcon className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Pessoa Jurídica</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.pj}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Busca */}
-          <div className="relative flex-1">
+          <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
           
-          {/* Filtros */}
+          {/* Filtro Tipo */}
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             <option value="all">Todos os tipos</option>
             <option value="PF">Pessoa Física</option>
             <option value="PJ">Pessoa Jurídica</option>
           </select>
           
+          {/* Filtro Status */}
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             <option value="all">Todos os status</option>
             <option value="Ativo">Ativo</option>
             <option value="Inativo">Inativo</option>
           </select>
         </div>
+      </div>
 
-        {/* Tabela */}
+      {/* Lista de Clientes */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -278,11 +262,11 @@ const Clients = () => {
                 <tr key={client.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                         {client.type === 'PF' ? (
-                          <UserIcon className="w-5 h-5 text-primary-600" />
+                          <UserIcon className="w-5 h-5 text-red-600" />
                         ) : (
-                          <BuildingOfficeIcon className="w-5 h-5 text-primary-600" />
+                          <BuildingOfficeIcon className="w-5 h-5 text-red-600" />
                         )}
                       </div>
                       <div className="ml-4">
@@ -316,8 +300,8 @@ const Clients = () => {
                         <EyeIcon className="w-5 h-5" />
                       </button>
                       <Link
-                        to={`/admin/clientes/${client.id}`}
-                        className="text-primary-600 hover:text-primary-900"
+                        to={`/admin/clients/${client.id}/edit`}
+                        className="text-red-600 hover:text-red-900"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </Link>
@@ -351,4 +335,4 @@ const Clients = () => {
   );
 };
 
-export default Clients;
+export default ClientList;

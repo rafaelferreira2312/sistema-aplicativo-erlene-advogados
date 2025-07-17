@@ -1,0 +1,175 @@
+[drwxrwxr-x 4.0K]  /var/www/html/sistema-aplicativo-erlene-advogados/frontend
+├── [-rw-rw-r-- 1005]  craco.config.js
+├── [-rw-rw-r--    0]  estrutura_completa_frontend.txt
+├── [-rw-rw-r-- 2.5K]  package.json
+├── [-rw-rw-r-- 2.5K]  package.json.backup
+├── [-rw-rw-r-- 839K]  package-lock.json
+├── [-rw-rw-r--   82]  postcss.config.js
+├── [drwxrwxr-x 4.0K]  public
+│   ├── [-rw-rw-r--  297]  favicon.ico
+│   ├── [-rw-rw-r-- 4.9K]  index.html
+│   ├── [-rw-rw-r--  316]  logo192.png
+│   ├── [-rw-rw-r--  318]  logo512.png
+│   ├── [-rw-rw-r--  707]  manifest.json
+│   └── [-rw-rw-r--  138]  robots.txt
+├── [-rw-rw-r-- 5.4K]  README.md
+├── [drwxrwxr-x 4.0K]  src
+│   ├── [-rw-rw-r--    0]  App.css
+│   ├── [-rw-rw-r-- 4.6K]  App.js
+│   ├── [drwxrwxr-x 4.0K]  components
+│   │   ├── [drwxrwxr-x 4.0K]  auth
+│   │   │   ├── [-rw-rw-r--  836]  PrivateRoute.js
+│   │   │   └── [-rw-rw-r--  680]  PublicRoute.js
+│   │   ├── [drwxrwxr-x 4.0K]  common
+│   │   │   ├── [-rw-rw-r--  904]  Badge.js
+│   │   │   ├── [-rw-rw-r-- 1.9K]  Button.js
+│   │   │   ├── [-rw-rw-r-- 1.6K]  Card.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  ErrorBoundary
+│   │   │   │   └── [-rw-rw-r-- 1.1K]  index.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  Header
+│   │   │   │   ├── [-rw-rw-r--    0]  Header.css
+│   │   │   │   └── [-rw-rw-r-- 4.9K]  index.js
+│   │   │   ├── [-rw-rw-r-- 1.7K]  Input.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  Loading
+│   │   │   │   ├── [-rw-rw-r--  919]  index.js
+│   │   │   │   └── [-rw-rw-r--    0]  Loading.css
+│   │   │   ├── [drwxrwxr-x 4.0K]  Modal
+│   │   │   │   ├── [-rw-rw-r-- 4.0K]  index.js
+│   │   │   │   └── [-rw-rw-r--    0]  Modal.css
+│   │   │   └── [drwxrwxr-x 4.0K]  Sidebar
+│   │   │       ├── [-rw-rw-r-- 4.7K]  index.js
+│   │   │       └── [-rw-rw-r--    0]  Sidebar.css
+│   │   └── [drwxrwxr-x 4.0K]  layout
+│   │       ├── [drwxrwxr-x 4.0K]  AdminLayout
+│   │       │   ├── [-rw-rw-r--    0]  AdminLayout.css
+│   │       │   └── [-rw-rw-r-- 8.6K]  index.js
+│   │       ├── [drwxrwxr-x 4.0K]  AuthLayout
+│   │       │   ├── [-rw-rw-r--    0]  AuthLayout.css
+│   │       │   └── [-rw-rw-r-- 1.0K]  index.js
+│   │       └── [drwxrwxr-x 4.0K]  PortalLayout
+│   │           ├── [-rw-rw-r-- 6.1K]  index.js
+│   │           └── [-rw-rw-r--    0]  PortalLayout.css
+│   ├── [drwxrwxr-x 4.0K]  config
+│   │   ├── [drwxrwxr-x 4.0K]  api
+│   │   │   └── [-rw-rw-r--    0]  index.js
+│   │   ├── [-rw-rw-r--  520]  constants.js
+│   │   ├── [drwxrwxr-x 4.0K]  integrations
+│   │   │   ├── [-rw-rw-r--    0]  chatgpt.js
+│   │   │   ├── [-rw-rw-r--    0]  cnj.js
+│   │   │   ├── [-rw-rw-r--    0]  escavador.js
+│   │   │   ├── [-rw-rw-r--    0]  google.js
+│   │   │   ├── [-rw-rw-r--    0]  jurisbrasil.js
+│   │   │   ├── [-rw-rw-r--    0]  mercadopago.js
+│   │   │   ├── [-rw-rw-r--    0]  microsoft.js
+│   │   │   └── [-rw-rw-r--    0]  stripe.js
+│   │   └── [-rw-rw-r-- 6.6K]  routes.js
+│   ├── [drwxrwxr-x 4.0K]  context
+│   │   ├── [drwxrwxr-x 4.0K]  auth
+│   │   │   ├── [-rw-rw-r--  185]  AuthContext.js
+│   │   │   └── [-rw-rw-r--  304]  AuthProvider.js
+│   │   ├── [drwxrwxr-x 4.0K]  notification
+│   │   │   ├── [-rw-rw-r--  278]  NotificationContext.js
+│   │   │   └── [-rw-rw-r-- 1.2K]  NotificationProvider.js
+│   │   └── [drwxrwxr-x 4.0K]  theme
+│   │       ├── [-rw-rw-r--  162]  ThemeContext.js
+│   │       └── [-rw-rw-r-- 3.4K]  ThemeProvider.js
+│   ├── [drwxrwxr-x 4.0K]  hooks
+│   │   ├── [drwxrwxr-x 4.0K]  api
+│   │   │   ├── [-rw-rw-r--    0]  useApi.js
+│   │   │   ├── [-rw-rw-r-- 3.1K]  useAppointments.js
+│   │   │   ├── [-rw-rw-r-- 3.1K]  useClients.js
+│   │   │   └── [-rw-rw-r-- 2.8K]  useProcesses.js
+│   │   ├── [drwxrwxr-x 4.0K]  auth
+│   │   │   ├── [-rw-rw-r--  295]  useAuth.js
+│   │   │   └── [-rw-rw-r--    0]  usePermissions.js
+│   │   └── [drwxrwxr-x 4.0K]  common
+│   │       ├── [-rw-rw-r--  925]  useDebounce.js
+│   │       ├── [-rw-rw-r-- 3.5K]  useForm.js
+│   │       ├── [-rw-rw-r-- 1.6K]  useLocalStorage.js
+│   │       ├── [-rw-rw-r--    0]  useModal.js
+│   │       └── [-rw-rw-r-- 1.7K]  usePagination.js
+│   ├── [-rw-rw-r-- 1.8K]  index.css
+│   ├── [-rw-rw-r--  254]  index.js
+│   ├── [drwxrwxr-x 4.0K]  pages
+│   │   ├── [drwxrwxr-x 4.0K]  admin
+│   │   │   ├── [-rw-rw-r--  306]  Appointments.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  Clients
+│   │   │   │   └── [-rw-rw-r--  13K]  index.js
+│   │   │   ├── [-rw-rw-r--  288]  Clients.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  Dashboard
+│   │   │   │   ├── [-rw-rw-r--    0]  Dashboard.css
+│   │   │   │   └── [-rw-rw-r-- 9.3K]  index.js
+│   │   │   ├── [-rw-rw-r--  286]  Documents.js
+│   │   │   ├── [-rw-rw-r--  293]  Financial.js
+│   │   │   ├── [-rw-rw-r--  279]  Kanban.js
+│   │   │   ├── [-rw-rw-r--  294]  Processes.js
+│   │   │   ├── [-rw-rw-r--  294]  Reports.js
+│   │   │   ├── [-rw-rw-r--  304]  Settings.js
+│   │   │   └── [-rw-rw-r--  286]  Users.js
+│   │   ├── [drwxrwxr-x 4.0K]  auth
+│   │   │   └── [drwxrwxr-x 4.0K]  Login
+│   │   │       ├── [-rw-rw-r-- 8.9K]  index.js
+│   │   │       └── [-rw-rw-r--    0]  Login.css
+│   │   ├── [drwxrwxr-x 4.0K]  errors
+│   │   │   ├── [-rw-rw-r--  716]  NotFound.js
+│   │   │   └── [-rw-rw-r--  726]  Unauthorized.js
+│   │   └── [drwxrwxr-x 4.0K]  portal
+│   │       ├── [drwxrwxr-x 4.0K]  Dashboard
+│   │       │   ├── [-rw-rw-r--    0]  Dashboard.css
+│   │       │   └── [-rw-rw-r-- 8.3K]  index.js
+│   │       ├── [-rw-rw-r--  305]  Documents.js
+│   │       ├── [-rw-rw-r--  528]  Login.js
+│   │       ├── [-rw-rw-r--  296]  Messages.js
+│   │       ├── [-rw-rw-r--  298]  Payments.js
+│   │       └── [-rw-rw-r--  303]  Processes.js
+│   ├── [drwxrwxr-x 4.0K]  services
+│   │   ├── [drwxrwxr-x 4.0K]  api
+│   │   │   ├── [-rw-rw-r-- 3.0K]  apiClient.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  appointments
+│   │   │   │   └── [-rw-rw-r-- 1.5K]  appointmentService.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  clients
+│   │   │   │   └── [-rw-rw-r-- 1.6K]  clientService.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  documents
+│   │   │   │   └── [-rw-rw-r--    0]  documentService.js
+│   │   │   ├── [-rw-rw-r-- 4.2K]  endpoints.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  financial
+│   │   │   │   └── [-rw-rw-r-- 1.5K]  financialService.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  portal
+│   │   │   │   └── [-rw-rw-r--    0]  portalService.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  processes
+│   │   │   │   └── [-rw-rw-r-- 1.7K]  processService.js
+│   │   │   ├── [drwxrwxr-x 4.0K]  reports
+│   │   │   │   └── [-rw-rw-r--    0]  reportService.js
+│   │   │   └── [drwxrwxr-x 4.0K]  users
+│   │   │       └── [-rw-rw-r--    0]  userService.js
+│   │   └── [drwxrwxr-x 4.0K]  auth
+│   │       ├── [-rw-rw-r-- 2.9K]  authService.js
+│   │       └── [-rw-rw-r-- 1.6K]  tokenService.js
+│   ├── [drwxrwxr-x 4.0K]  styles
+│   │   ├── [-rw-rw-r-- 4.5K]  components.css
+│   │   ├── [-rw-rw-r--  397]  globals.css
+│   │   ├── [drwxrwxr-x 4.0K]  themes
+│   │   │   ├── [-rw-rw-r--    0]  dark.css
+│   │   │   └── [-rw-rw-r--    0]  light.css
+│   │   └── [-rw-rw-r--    0]  variables.css
+│   ├── [-rw-rw-r-- 1.5K]  TestTailwind.js
+│   └── [drwxrwxr-x 4.0K]  utils
+│       ├── [-rw-rw-r-- 4.4K]  browserHelpers.js
+│       ├── [-rw-rw-r-- 3.6K]  dateHelpers.js
+│       ├── [-rw-rw-r-- 4.0K]  fileHelpers.js
+│       ├── [drwxrwxr-x 4.0K]  formatters
+│       │   ├── [-rw-rw-r--    0]  currencyFormatter.js
+│       │   ├── [-rw-rw-r--    0]  dateFormatter.js
+│       │   └── [-rw-rw-r--    0]  documentFormatter.js
+│       ├── [-rw-rw-r-- 5.2K]  formatters.js
+│       ├── [drwxrwxr-x 4.0K]  helpers
+│       │   ├── [-rw-rw-r--    0]  apiHelpers.js
+│       │   └── [-rw-rw-r--    0]  routeHelpers.js
+│       ├── [-rw-rw-r-- 2.0K]  urlHelpers.js
+│       ├── [drwxrwxr-x 4.0K]  validators
+│       │   ├── [-rw-rw-r--    0]  documentValidators.js
+│       │   └── [-rw-rw-r--    0]  formValidators.js
+│       └── [-rw-rw-r-- 6.4K]  validators.js
+└── [-rw-rw-r-- 1.1K]  tailwind.config.js
+
+52 directories, 121 files

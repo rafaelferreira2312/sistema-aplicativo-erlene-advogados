@@ -1,3 +1,30 @@
+#!/bin/bash
+
+# Script 71 - Corrigir Rotas e Estrutura de Clientes
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+
+echo "🔧 Corrigindo rotas e estrutura de clientes..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+# Verificar estrutura frontend
+if [ ! -d "frontend" ]; then
+    echo "❌ Erro: Pasta frontend não encontrada"
+    exit 1
+fi
+
+echo "📁 Criando estrutura correta seguindo padrão do projeto..."
+
+# Criar estrutura seguindo o padrão: frontend/src/pages/admin/Clients/
+mkdir -p frontend/src/pages/admin/Clients
+
+# Criar index.js seguindo EXATAMENTE o padrão do Dashboard
+cat > frontend/src/pages/admin/Clients/index.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -71,7 +98,7 @@ const Clients = () => {
       setClients(mockClients);
       setLoading(false);
     }, 1000);
-  }, [mockClients]);
+  }, []);
 
   // Calcular estatísticas
   const stats = {
@@ -352,3 +379,24 @@ const Clients = () => {
 };
 
 export default Clients;
+EOF
+
+echo "✅ Arquivo de clientes corrigido!"
+echo ""
+echo "📁 ESTRUTURA CRIADA:"
+echo "   • frontend/src/pages/admin/Clients/index.js"
+echo ""
+echo "🎨 SEGUINDO PADRÃO EXATO:"
+echo "   • Mesmo layout do Dashboard"
+echo "   • Classes CSS: shadow-erlene, primary-600"
+echo "   • Rotas em português: /admin/clientes"
+echo "   • Estrutura de componentes idêntica"
+echo ""
+echo "🔗 ROTAS CONFIGURADAS:"
+echo "   • /admin/clientes (lista)"
+echo "   • /admin/clientes/novo (cadastro)"
+echo "   • /admin/clientes/:id (detalhes)"
+echo ""
+echo "⚠️ PRÓXIMO PASSO:"
+echo "Preciso ver o arquivo de rotas principal (App.js) para configurar as rotas"
+echo "Onde está localizado? frontend/src/App.js ?"
