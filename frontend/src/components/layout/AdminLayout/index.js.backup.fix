@@ -32,7 +32,7 @@ const AdminLayout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' },
     { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname === '/admin/clientes' },
-    { name: 'Processos', href: '/admin/processos', icon: ScaleIcon, current: location.pathname === '/admin/processos' },    
+    { name: 'Processos', href: '/admin/processes', icon: ScaleIcon, current: location.pathname === '/admin/processes' },
     { name: 'Atendimentos', href: '/admin/appointments', icon: CalendarIcon, current: location.pathname === '/admin/appointments' },
     { name: 'Financeiro', href: '/admin/financial', icon: CurrencyDollarIcon, current: location.pathname === '/admin/financial' },
     { name: 'Documentos', href: '/admin/documents', icon: DocumentIcon, current: location.pathname === '/admin/documents' },

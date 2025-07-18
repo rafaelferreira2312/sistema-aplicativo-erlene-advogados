@@ -5,8 +5,6 @@ import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
 import NewClient from './components/clients/NewClient';
-import Processes from './pages/admin/Processes';
-import NewProcess from './components/processes/NewProcess';
 
 // Portal Cliente (temporário)
 const ClientPortal = () => {
@@ -121,8 +119,6 @@ function App() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="clientes" element={<Clients />} />
                     <Route path="clientes/novo" element={<NewClient />} />
-                    <Route path="processos" element={<Processes />} />
-                    <Route path="processos/novo" element={<NewProcess />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>

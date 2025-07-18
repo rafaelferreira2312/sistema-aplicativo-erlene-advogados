@@ -1,3 +1,27 @@
+#!/bin/bash
+
+# Script 77 - Tela de Processos (Parte 1/3)
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+
+echo "⚖️ Criando tela de processos (Parte 1/3)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+# Verificar estrutura frontend
+if [ ! -d "frontend/src/pages/admin" ]; then
+    echo "❌ Erro: Estrutura frontend não encontrada"
+    exit 1
+fi
+
+echo "📁 Criando página principal de processos..."
+
+# Criar Processes.js seguindo EXATO padrão dos clientes
+cat > frontend/src/pages/admin/Processes.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -337,206 +361,22 @@ const Processes = () => {
           </div>
         </div>
       </div>
+EOF
 
-      {/* Lista de Processos */}
-      <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Lista de Processos</h2>
-          <Link
-            to="/admin/processos/novo"
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Novo Processo
-          </Link>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-          {/* Busca */}
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar processo, cliente ou tipo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          
-          {/* Filtros */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Todos os status</option>
-            <option value="Em andamento">Em andamento</option>
-            <option value="Urgente">Urgente</option>
-            <option value="Suspenso">Suspenso</option>
-            <option value="Concluído">Concluído</option>
-          </select>
-          
-          <select
-            value={filterCourt}
-            onChange={(e) => setFilterCourt(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Todos os tribunais</option>
-            <option value="TJSP">TJSP</option>
-            <option value="TJRJ">TJRJ</option>
-            <option value="STJ">STJ</option>
-            <option value="TST">TST</option>
-          </select>
-
-          <select
-            value={filterClient}
-            onChange={(e) => setFilterClient(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Todos os clientes</option>
-            <option value="1">João Silva Santos</option>
-            <option value="2">Empresa ABC Ltda</option>
-            <option value="3">Maria Oliveira Costa</option>
-            <option value="4">Tech Solutions S.A.</option>
-          </select>
-        </div>
-
-        {/* Tabela de Processos */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Processo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cliente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tribunal/Tipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Valor/Prazo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Advogado
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProcesses.map((process) => (
-                <tr key={process.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                        <ScaleIcon className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {process.number}
-                        </div>
-                        <div className={`text-xs font-medium ${getPriorityColor(process.priority)}`}>
-                          Prioridade: {process.priority}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{process.client}</div>
-                    <div className="text-sm text-gray-500">ID: {process.clientId}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{process.court}</div>
-                    <div className="text-sm text-gray-500">{process.actionType}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(process.status)}`}>
-                      {getStatusIcon(process.status)}
-                      <span className="ml-1">{process.status}</span>
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {process.value > 0 ? `R$ ${process.value.toLocaleString('pt-BR')}` : 'Sem valor'}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {process.nextDeadline ? (
-                        <span className="flex items-center">
-                          <ClockIcon className="w-3 h-3 mr-1" />
-                          {new Date(process.nextDeadline).toLocaleDateString('pt-BR')}
-                        </span>
-                      ) : (
-                        'Sem prazo'
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{process.lawyer}</div>
-                    <div className="text-sm text-gray-500">
-                      Dist: {new Date(process.distributionDate).toLocaleDateString('pt-BR')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
-                      <button 
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Visualizar"
-                      >
-                        <EyeIcon className="w-5 h-5" />
-                      </button>
-                      <Link
-                        to={`/admin/processos/${process.id}/editar`}
-                        className="text-primary-600 hover:text-primary-900"
-                        title="Editar"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(process.id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Excluir"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Estado vazio */}
-        {filteredProcesses.length === 0 && (
-          <div className="text-center py-12">
-            <ScaleIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum processo encontrado</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {searchTerm || filterStatus !== 'all' || filterCourt !== 'all' || filterClient !== 'all'
-                ? 'Tente ajustar os filtros de busca.'
-                : 'Comece cadastrando um novo processo.'}
-            </p>
-            <div className="mt-6">
-              <Link
-                to="/admin/processos/novo"
-                className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                Novo Processo
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default Processes;
+echo "✅ Processes.js criado (Parte 1 - até linha 300)!"
+echo ""
+echo "📊 IMPLEMENTADO ATÉ AGORA:"
+echo "   • Estrutura base seguindo padrão clientes"
+echo "   • Mock data de processos com relacionamento a clientes"
+echo "   • Cards de estatísticas com ícones específicos"
+echo "   • Ações rápidas para processos"
+echo "   • Filtros rápidos funcionais"
+echo "   • Estados de loading"
+echo ""
+echo "⏭️ PRÓXIMA PARTE (2/3):"
+echo "   • Lista de processos com tabela"
+echo "   • Filtros avançados"
+echo "   • Ações de CRUD"
+echo "   • Relacionamento com clientes"
+echo ""
+echo "Digite 'continuar' para Parte 2/3!"

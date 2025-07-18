@@ -118,8 +118,8 @@ const Dashboard = () => {
   ];
 
   const quickActions = [
-    { title: 'Novo Cliente', icon: '👤', color: 'blue', href: '/admin/clients/new' },
-    { title: 'Novo Processo', icon: '⚖️', color: 'green', href: '/admin/processes/new' },
+    { title: 'Novo Cliente', icon: '👤', color: 'blue', href: '/admin/clientes/novo' },
+    { title: 'Novo Processo', icon: '⚖️', color: 'green', href: '/admin/processos/novo' },
     { title: 'Agendar Atendimento', icon: '📅', color: 'purple', href: '/admin/appointments/new' },
     { title: 'Ver Relatórios', icon: '📊', color: 'yellow', href: '/admin/reports' },
     { title: 'Upload Documento', icon: '📄', color: 'red', href: '/admin/documents/upload' },

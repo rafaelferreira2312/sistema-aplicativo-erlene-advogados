@@ -1,6 +1,5 @@
 [drwxrwxr-x 4.0K]  /var/www/html/sistema-aplicativo-erlene-advogados/frontend
 ├── [-rw-rw-r-- 1005]  craco.config.js
-├── [-rw-rw-r--    0]  estrutura_completa_frontend.txt
 ├── [-rw-rw-r-- 2.5K]  package.json
 ├── [-rw-rw-r-- 2.5K]  package.json.backup
 ├── [-rw-rw-r-- 839K]  package-lock.json
@@ -15,11 +14,15 @@
 ├── [-rw-rw-r-- 5.4K]  README.md
 ├── [drwxrwxr-x 4.0K]  src
 │   ├── [-rw-rw-r--    0]  App.css
-│   ├── [-rw-rw-r-- 4.6K]  App.js
+│   ├── [-rw-rw-r-- 5.0K]  App.js
+│   ├── [-rw-rw-r-- 4.7K]  App.js.backup.20250717_113541
+│   ├── [-rw-rw-r-- 4.8K]  App.js.backup.processes
 │   ├── [drwxrwxr-x 4.0K]  components
 │   │   ├── [drwxrwxr-x 4.0K]  auth
 │   │   │   ├── [-rw-rw-r--  836]  PrivateRoute.js
 │   │   │   └── [-rw-rw-r--  680]  PublicRoute.js
+│   │   ├── [drwxrwxr-x 4.0K]  clients
+│   │   │   └── [-rw-rw-r--  20K]  NewClient.js
 │   │   ├── [drwxrwxr-x 4.0K]  common
 │   │   │   ├── [-rw-rw-r--  904]  Badge.js
 │   │   │   ├── [-rw-rw-r-- 1.9K]  Button.js
@@ -39,16 +42,19 @@
 │   │   │   └── [drwxrwxr-x 4.0K]  Sidebar
 │   │   │       ├── [-rw-rw-r-- 4.7K]  index.js
 │   │   │       └── [-rw-rw-r--    0]  Sidebar.css
-│   │   └── [drwxrwxr-x 4.0K]  layout
-│   │       ├── [drwxrwxr-x 4.0K]  AdminLayout
-│   │       │   ├── [-rw-rw-r--    0]  AdminLayout.css
-│   │       │   └── [-rw-rw-r-- 8.6K]  index.js
-│   │       ├── [drwxrwxr-x 4.0K]  AuthLayout
-│   │       │   ├── [-rw-rw-r--    0]  AuthLayout.css
-│   │       │   └── [-rw-rw-r-- 1.0K]  index.js
-│   │       └── [drwxrwxr-x 4.0K]  PortalLayout
-│   │           ├── [-rw-rw-r-- 6.1K]  index.js
-│   │           └── [-rw-rw-r--    0]  PortalLayout.css
+│   │   ├── [drwxrwxr-x 4.0K]  layout
+│   │   │   ├── [drwxrwxr-x 4.0K]  AdminLayout
+│   │   │   │   ├── [-rw-rw-r--    0]  AdminLayout.css
+│   │   │   │   ├── [-rw-rw-r-- 8.7K]  index.js
+│   │   │   │   └── [-rw-rw-r-- 8.6K]  index.js.backup
+│   │   │   ├── [drwxrwxr-x 4.0K]  AuthLayout
+│   │   │   │   ├── [-rw-rw-r--    0]  AuthLayout.css
+│   │   │   │   └── [-rw-rw-r-- 1.0K]  index.js
+│   │   │   └── [drwxrwxr-x 4.0K]  PortalLayout
+│   │   │       ├── [-rw-rw-r-- 6.1K]  index.js
+│   │   │       └── [-rw-rw-r--    0]  PortalLayout.css
+│   │   └── [drwxrwxr-x 4.0K]  processes
+│   │       └── [-rw-rw-r--  19K]  NewProcess.js
 │   ├── [drwxrwxr-x 4.0K]  config
 │   │   ├── [drwxrwxr-x 4.0K]  api
 │   │   │   └── [-rw-rw-r--    0]  index.js
@@ -93,16 +99,15 @@
 │   ├── [drwxrwxr-x 4.0K]  pages
 │   │   ├── [drwxrwxr-x 4.0K]  admin
 │   │   │   ├── [-rw-rw-r--  306]  Appointments.js
-│   │   │   ├── [drwxrwxr-x 4.0K]  Clients
-│   │   │   │   └── [-rw-rw-r--  13K]  index.js
-│   │   │   ├── [-rw-rw-r--  288]  Clients.js
+│   │   │   ├── [-rw-rw-r--  14K]  Clients.js
+│   │   │   ├── [-rw-rw-r--  14K]  Clients.js.backup.fix
 │   │   │   ├── [drwxrwxr-x 4.0K]  Dashboard
 │   │   │   │   ├── [-rw-rw-r--    0]  Dashboard.css
 │   │   │   │   └── [-rw-rw-r-- 9.3K]  index.js
 │   │   │   ├── [-rw-rw-r--  286]  Documents.js
 │   │   │   ├── [-rw-rw-r--  293]  Financial.js
 │   │   │   ├── [-rw-rw-r--  279]  Kanban.js
-│   │   │   ├── [-rw-rw-r--  294]  Processes.js
+│   │   │   ├── [-rw-rw-r--  22K]  Processes.js
 │   │   │   ├── [-rw-rw-r--  294]  Reports.js
 │   │   │   ├── [-rw-rw-r--  304]  Settings.js
 │   │   │   └── [-rw-rw-r--  286]  Users.js
@@ -172,4 +177,4 @@
 │       └── [-rw-rw-r-- 6.4K]  validators.js
 └── [-rw-rw-r-- 1.1K]  tailwind.config.js
 
-52 directories, 121 files
+53 directories, 125 files
