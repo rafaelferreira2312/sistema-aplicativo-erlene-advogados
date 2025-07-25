@@ -7,6 +7,7 @@ import {
   UsersIcon,
   ScaleIcon,
   CalendarIcon,
+  ClockIcon,
   CurrencyDollarIcon,
   DocumentIcon,
   ClipboardDocumentListIcon,
@@ -30,9 +31,11 @@ const AdminLayout = ({ children }) => {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' },
-    { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname === '/admin/clientes' },
-    { name: 'Processos', href: '/admin/processos', icon: ScaleIcon, current: location.pathname === '/admin/processos' },    
+    { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' || location.pathname === '/admin/dashboard' },
+    { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname.startsWith('/admin/clientes') },
+    { name: 'Processos', href: '/admin/processos', icon: ScaleIcon, current: location.pathname.startsWith('/admin/processos') },
+    { name: 'Audiências', href: '/admin/audiencias', icon: CalendarIcon, current: location.pathname === '/admin/audiencias' },
+    { name: 'Prazos', href: '/admin/prazos', icon: ClockIcon, current: location.pathname === '/admin/prazos' },
     { name: 'Atendimentos', href: '/admin/appointments', icon: CalendarIcon, current: location.pathname === '/admin/appointments' },
     { name: 'Financeiro', href: '/admin/financial', icon: CurrencyDollarIcon, current: location.pathname === '/admin/financial' },
     { name: 'Documentos', href: '/admin/documents', icon: DocumentIcon, current: location.pathname === '/admin/documents' },

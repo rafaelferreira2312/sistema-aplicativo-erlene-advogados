@@ -1,0 +1,211 @@
+[drwxrwxr-x 4.0K]  /var/www/html/rafaelferreira2312/sistema-aplicativo-erlene-advogados/backend
+├── [drwxrwxr-x 4.0K]  app
+│   ├── [drwxrwxr-x 4.0K]  Exceptions
+│   │   └── [-rw-rw-r-- 4.0K]  Handler.php
+│   ├── [drwxrwxr-x 4.0K]  Http
+│   │   ├── [drwxrwxr-x 4.0K]  Controllers
+│   │   │   ├── [drwxrwxr-x 4.0K]  Api
+│   │   │   │   ├── [drwxrwxr-x 4.0K]  Admin
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Appointments
+│   │   │   │   │   │   ├── [-rw-rw-r-- 7.9K]  AppointmentController.php
+│   │   │   │   │   │   └── [-rw-rw-r--    0]  CalendarController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Clients
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  ClientAccessController.php
+│   │   │   │   │   │   ├── [-rw-rw-r-- 7.9K]  ClientController.php
+│   │   │   │   │   │   └── [-rw-rw-r--    0]  ClientDocumentController.php
+│   │   │   │   │   ├── [-rw-rw-r--  12K]  ConfigController.php
+│   │   │   │   │   ├── [-rw-rw-r-- 7.8K]  DashboardController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Documents
+│   │   │   │   │   │   ├── [-rw-rw-r--  13K]  DocumentController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  GEDController.php
+│   │   │   │   │   │   └── [-rw-rw-r--    0]  StorageController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Financial
+│   │   │   │   │   │   ├── [-rw-rw-r-- 9.9K]  FinancialController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--  12K]  MercadoPagoController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  PaymentController.php
+│   │   │   │   │   │   └── [-rw-rw-r--  11K]  StripeController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Integrations
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  DriveController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  EmailController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  PaymentGatewayController.php
+│   │   │   │   │   │   └── [-rw-rw-r--    0]  TribunalController.php
+│   │   │   │   │   ├── [-rw-rw-r--  13K]  KanbanController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Processes
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  KanbanController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  MovementController.php
+│   │   │   │   │   │   └── [-rw-rw-r-- 8.9K]  ProcessController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Reports
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  ClientReportController.php
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  FinancialReportController.php
+│   │   │   │   │   │   └── [-rw-rw-r--    0]  ProcessReportController.php
+│   │   │   │   │   ├── [-rw-rw-r--    0]  UnitsController.php
+│   │   │   │   │   ├── [drwxrwxr-x 4.0K]  Users
+│   │   │   │   │   │   ├── [-rw-rw-r--    0]  PermissionController.php
+│   │   │   │   │   │   └── [-rw-rw-r--  10K]  UserController.php
+│   │   │   │   │   └── [-rw-rw-r--    0]  UsersController.php
+│   │   │   │   └── [drwxrwxr-x 4.0K]  Portal
+│   │   │   │       ├── [-rw-rw-r-- 9.2K]  ClientDashboardController.php
+│   │   │   │       ├── [-rw-rw-r-- 7.3K]  ClientDocumentController.php
+│   │   │   │       ├── [-rw-rw-r-- 8.2K]  ClientMessageController.php
+│   │   │   │       ├── [-rw-rw-r-- 9.1K]  ClientPaymentController.php
+│   │   │   │       └── [-rw-rw-r-- 4.9K]  ClientProcessController.php
+│   │   │   ├── [drwxrwxr-x 4.0K]  Auth
+│   │   │   │   └── [-rw-rw-r-- 5.8K]  AuthController.php
+│   │   │   └── [-rw-rw-r-- 2.0K]  Controller.php
+│   │   └── [drwxrwxr-x 4.0K]  Middleware
+│   │       ├── [-rw-rw-r-- 1.3K]  Cors.php
+│   │       └── [-rw-rw-r-- 1.7K]  JwtMiddleware.php
+│   ├── [drwxrwxr-x 4.0K]  Models
+│   │   ├── [drwxrwxr-x 4.0K]  Admin
+│   │   │   └── [-rw-rw-r--    0]  AdminUser.php
+│   │   ├── [-rw-rw-r--    0]  Appointment.php
+│   │   ├── [-rw-rw-r-- 2.0K]  Atendimento.php
+│   │   ├── [-rw-rw-r--    0]  Calendar.php
+│   │   ├── [drwxrwxr-x 4.0K]  Client
+│   │   │   └── [-rw-rw-r--    0]  ClientAccess.php
+│   │   ├── [-rw-rw-r-- 2.4K]  Cliente.php
+│   │   ├── [-rw-rw-r--    0]  Client.php
+│   │   ├── [-rw-rw-r-- 2.0K]  DocumentoGed.php
+│   │   ├── [-rw-rw-r--    0]  Document.php
+│   │   ├── [-rw-rw-r-- 2.2K]  Financeiro.php
+│   │   ├── [drwxrwxr-x 4.0K]  Financial
+│   │   │   ├── [-rw-rw-r--    0]  MercadoPagoPayment.php
+│   │   │   ├── [-rw-rw-r--    0]  Payment.php
+│   │   │   └── [-rw-rw-r--    0]  StripePayment.php
+│   │   ├── [-rw-rw-r--    0]  Financial.php
+│   │   ├── [drwxrwxr-x 4.0K]  Integration
+│   │   │   ├── [-rw-rw-r--    0]  DriveSync.php
+│   │   │   └── [-rw-rw-r--    0]  TribunalIntegration.php
+│   │   ├── [-rw-rw-r--    0]  Integration.php
+│   │   ├── [-rw-rw-r-- 1.8K]  KanbanCard.php
+│   │   ├── [-rw-rw-r--    0]  KanbanColumn.php
+│   │   ├── [-rw-rw-r-- 1017]  KanbanColuna.php
+│   │   ├── [-rw-rw-r-- 2.3K]  Mensagem.php
+│   │   ├── [-rw-rw-r--    0]  Message.php
+│   │   ├── [-rw-rw-r--    0]  Movement.php
+│   │   ├── [-rw-rw-r-- 1.3K]  Movimentacao.php
+│   │   ├── [-rw-rw-r-- 2.7K]  PagamentoMercadoPago.php
+│   │   ├── [-rw-rw-r-- 2.1K]  PagamentoStripe.php
+│   │   ├── [-rw-rw-r--    0]  Permission.php
+│   │   ├── [-rw-rw-r-- 2.5K]  Processo.php
+│   │   ├── [-rw-rw-r--    0]  Process.php
+│   │   ├── [-rw-rw-r-- 1.9K]  Tarefa.php
+│   │   ├── [-rw-rw-r--    0]  Task.php
+│   │   ├── [-rw-rw-r-- 1.4K]  Tribunal.php
+│   │   ├── [-rw-rw-r-- 1.7K]  Unidade.php
+│   │   ├── [-rw-rw-r--    0]  Unit.php
+│   │   └── [-rw-rw-r-- 2.2K]  User.php
+│   ├── [drwxrwxr-x 4.0K]  Providers
+│   │   ├── [-rw-rw-r-- 1.7K]  AppServiceProvider.php
+│   │   ├── [-rw-rw-r-- 1.4K]  AuthServiceProvider.php
+│   │   ├── [-rw-rw-r--  884]  EventServiceProvider.php
+│   │   └── [-rw-rw-r-- 1.1K]  RouteServiceProvider.php
+│   └── [drwxrwxr-x 4.0K]  Services
+│       ├── [-rw-rw-r--  19K]  AppointmentService.php
+│       ├── [-rw-rw-r-- 2.9K]  BaseService.php
+│       ├── [-rw-rw-r--  10K]  ClientService.php
+│       ├── [-rw-rw-r--  21K]  DocumentService.php
+│       ├── [-rw-rw-r--  20K]  FinancialService.php
+│       ├── [drwxrwxr-x 4.0K]  Integration
+│       │   ├── [-rw-rw-r-- 5.8K]  BaseIntegrationService.php
+│       │   ├── [-rw-rw-r-- 3.4K]  EmailService.php
+│       │   ├── [-rw-rw-r-- 4.2K]  GoogleDriveService.php
+│       │   ├── [-rw-rw-r-- 6.1K]  PaymentService.php
+│       │   └── [-rw-rw-r-- 3.2K]  TribunalService.php
+│       ├── [-rw-rw-r--  17K]  NotificationService.php
+│       └── [-rw-rw-r--  15K]  ProcessService.php
+├── [-rwxrwxr-x  988]  artisan
+├── [drwxrwxr-x 4.0K]  bootstrap
+│   └── [drwxr-xr-x 4.0K]  cache
+├── [-rw-rw-r-- 2.3K]  composer.json
+├── [drwxrwxr-x 4.0K]  config
+│   ├── [-rw-rw-r-- 4.5K]  app.php
+│   ├── [-rw-rw-r-- 2.1K]  auth.php
+│   ├── [-rw-rw-r-- 2.4K]  cache.php
+│   ├── [-rw-rw-r--  812]  cors.php
+│   ├── [-rw-rw-r-- 3.5K]  database.php
+│   ├── [-rw-rw-r--    0]  filesystems.php
+│   ├── [drwxrwxr-x 4.0K]  integrations
+│   │   ├── [-rw-rw-r--    0]  chatgpt.php
+│   │   ├── [-rw-rw-r--    0]  cnj.php
+│   │   ├── [-rw-rw-r--    0]  escavador.php
+│   │   ├── [-rw-rw-r--    0]  gmail.php
+│   │   ├── [-rw-rw-r--    0]  google_calendar.php
+│   │   ├── [-rw-rw-r--    0]  google_drive.php
+│   │   ├── [-rw-rw-r--    0]  jurisbrasil.php
+│   │   ├── [-rw-rw-r--    0]  mercadopago.php
+│   │   ├── [-rw-rw-r--    0]  onedrive.php
+│   │   └── [-rw-rw-r--    0]  stripe.php
+│   ├── [-rw-rw-r-- 4.2K]  jwt.php
+│   ├── [-rw-rw-r-- 2.3K]  mail.php
+│   └── [-rw-rw-r-- 2.9K]  services.php
+├── [drwxrwxr-x 4.0K]  database
+│   ├── [drwxrwxr-x 4.0K]  migrations
+│   │   ├── [-rw-rw-r-- 1.1K]  2024_01_01_000001_create_unidades_table.php
+│   │   ├── [-rw-rw-r-- 1.4K]  2024_01_01_000002_create_users_table.php
+│   │   ├── [-rw-rw-r-- 1.7K]  2024_01_01_000003_create_clientes_table.php
+│   │   ├── [-rw-rw-r-- 1.5K]  2024_01_01_000004_create_atendimentos_table.php
+│   │   ├── [-rw-rw-r-- 1.8K]  2024_01_01_000005_create_processos_table.php
+│   │   ├── [-rw-rw-r--  893]  2024_01_01_000006_create_atendimento_processos_table.php
+│   │   ├── [-rw-rw-r--  772]  2024_01_01_000007_create_kanban_colunas_table.php
+│   │   ├── [-rw-rw-r-- 1.2K]  2024_01_01_000008_create_kanban_cards_table.php
+│   │   ├── [-rw-rw-r-- 1.4K]  2024_01_01_000009_create_tarefas_table.php
+│   │   ├── [-rw-rw-r--  950]  2024_01_01_000010_create_movimentacoes_table.php
+│   │   ├── [-rw-rw-r-- 1.9K]  2024_01_01_000011_create_financeiro_table.php
+│   │   ├── [-rw-rw-r-- 1.7K]  2024_01_01_000012_create_documentos_ged_table.php
+│   │   ├── [-rw-rw-r--  889]  2024_01_01_000013_create_permissoes_ged_table.php
+│   │   ├── [-rw-rw-r-- 1.0K]  2024_01_01_000014_create_tribunais_table.php
+│   │   ├── [-rw-rw-r-- 2.0K]  2024_01_01_000015_create_pagamentos_stripe_table.php
+│   │   ├── [-rw-rw-r-- 2.3K]  2024_01_01_000016_create_pagamentos_mp_table.php
+│   │   ├── [-rw-rw-r-- 1.1K]  2024_01_01_000017_create_acessos_portal_table.php
+│   │   ├── [-rw-rw-r-- 1.0K]  2024_01_01_000018_create_sync_drives_table.php
+│   │   ├── [-rw-rw-r-- 1.8K]  2024_01_01_000019_create_mensagens_table.php
+│   │   ├── [-rw-rw-r-- 1.9K]  2024_01_01_000020_create_agenda_table.php
+│   │   ├── [-rw-rw-r-- 1.5K]  2024_01_01_000021_create_integracoes_table.php
+│   │   ├── [-rw-rw-r-- 1.4K]  2024_01_01_000022_create_logs_sistema_table.php
+│   │   ├── [-rw-rw-r-- 1.8K]  2024_01_01_000023_create_notificacoes_table.php
+│   │   ├── [-rw-rw-r-- 1.0K]  2024_01_01_000024_create_configuracoes_table.php
+│   │   └── [-rw-rw-r-- 1.1K]  2024_01_01_000025_create_user_sessions_table.php
+│   └── [drwxrwxr-x 4.0K]  seeders
+│       ├── [-rw-rw-r-- 2.2K]  ConfiguracoesSeeder.php
+│       ├── [-rw-rw-r--  361]  DatabaseSeeder.php
+│       ├── [-rw-rw-r--  865]  KanbanColunasSeeder.php
+│       ├── [-rw-rw-r-- 1.4K]  TribunalSeeder.php
+│       ├── [-rw-rw-r--  874]  UnidadeSeeder.php
+│       └── [-rw-rw-r-- 1.2K]  UserSeeder.php
+├── [-rw-rw-r--  899]  package.json
+├── [-rw-rw-r-- 1.8K]  phpunit.xml
+├── [drwxrwxr-x 4.0K]  public
+│   ├── [drwxrwxr-x 4.0K]  css
+│   ├── [drwxrwxr-x 4.0K]  js
+│   └── [drwxrwxr-x 4.0K]  webfonts
+├── [drwxrwxr-x 4.0K]  resources
+│   ├── [drwxrwxr-x 4.0K]  js
+│   │   ├── [drwxrwxr-x 4.0K]  admin
+│   │   ├── [drwxrwxr-x 4.0K]  components
+│   │   ├── [drwxrwxr-x 4.0K]  portal
+│   │   ├── [drwxrwxr-x 4.0K]  services
+│   │   └── [drwxrwxr-x 4.0K]  utils
+│   ├── [drwxrwxr-x 4.0K]  sass
+│   │   ├── [drwxrwxr-x 4.0K]  admin
+│   │   ├── [drwxrwxr-x 4.0K]  portal
+│   │   └── [drwxrwxr-x 4.0K]  vendor
+│   └── [drwxrwxr-x 4.0K]  views
+├── [drwxr-xr-x 4.0K]  storage
+│   ├── [drwxr-xr-x 4.0K]  app
+│   │   └── [drwxr-xr-x 4.0K]  clients
+│   └── [drwxr-xr-x 4.0K]  framework
+│       ├── [drwxr-xr-x 4.0K]  cache
+│       ├── [drwxr-xr-x 4.0K]  sessions
+│       └── [drwxr-xr-x 4.0K]  views
+├── [drwxrwxr-x 4.0K]  tests
+│   ├── [-rw-rw-r--  375]  CreatesApplication.php
+│   ├── [drwxrwxr-x 4.0K]  Feature
+│   │   └── [-rw-rw-r--  634]  ExampleTest.php
+│   ├── [drwxrwxr-x 4.0K]  results
+│   ├── [-rw-rw-r--  163]  TestCase.php
+│   └── [drwxrwxr-x 4.0K]  Unit
+│       └── [-rw-rw-r--  248]  ExampleTest.php
+└── [-rw-rw-r-- 2.8K]  webpack.mix.js
+
+60 directories, 149 files

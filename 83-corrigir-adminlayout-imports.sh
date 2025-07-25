@@ -1,3 +1,32 @@
+#!/bin/bash
+
+# Script 83 - Corrigir Imports do AdminLayout
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+
+echo "🔧 Corrigindo imports do AdminLayout (ClockIcon)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+# Verificar estrutura frontend
+if [ ! -d "frontend/src/components/layout/AdminLayout" ]; then
+    echo "❌ Erro: AdminLayout não encontrado"
+    exit 1
+fi
+
+echo "📝 Fazendo backup do AdminLayout atual..."
+
+# Fazer backup
+cp frontend/src/components/layout/AdminLayout/index.js frontend/src/components/layout/AdminLayout/index.js.backup.$(date +%Y%m%d_%H%M%S)
+
+echo "🔧 Corrigindo AdminLayout com imports corretos..."
+
+# Criar AdminLayout corrigido seguindo EXATO padrão do projeto
+cat > frontend/src/components/layout/AdminLayout/index.js << 'EOF'
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -7,6 +36,7 @@ import {
   UsersIcon,
   ScaleIcon,
   CalendarIcon,
+  ClockIcon,
   CurrencyDollarIcon,
   DocumentIcon,
   ClipboardDocumentListIcon,
@@ -30,9 +60,11 @@ const AdminLayout = ({ children }) => {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' },
-    { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname === '/admin/clientes' },
-    { name: 'Processos', href: '/admin/processes', icon: ScaleIcon, current: location.pathname === '/admin/processes' },
+    { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' || location.pathname === '/admin/dashboard' },
+    { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname.startsWith('/admin/clientes') },
+    { name: 'Processos', href: '/admin/processos', icon: ScaleIcon, current: location.pathname.startsWith('/admin/processos') },
+    { name: 'Audiências', href: '/admin/audiencias', icon: CalendarIcon, current: location.pathname === '/admin/audiencias' },
+    { name: 'Prazos', href: '/admin/prazos', icon: ClockIcon, current: location.pathname === '/admin/prazos' },
     { name: 'Atendimentos', href: '/admin/appointments', icon: CalendarIcon, current: location.pathname === '/admin/appointments' },
     { name: 'Financeiro', href: '/admin/financial', icon: CurrencyDollarIcon, current: location.pathname === '/admin/financial' },
     { name: 'Documentos', href: '/admin/documents', icon: DocumentIcon, current: location.pathname === '/admin/documents' },
@@ -190,3 +222,49 @@ const AdminLayout = ({ children }) => {
 };
 
 export default AdminLayout;
+EOF
+
+echo "✅ AdminLayout corrigido!"
+
+echo "📝 Verificando se todas as páginas existem..."
+
+# Verificar se todas as páginas mencionadas existem
+pages_to_check=(
+    "frontend/src/pages/admin/Audiencias.js"
+    "frontend/src/pages/admin/Prazos.js"
+)
+
+for page in "${pages_to_check[@]}"; do
+    if [ -f "$page" ]; then
+        echo "✅ $page existe"
+    else
+        echo "⚠️ $page não encontrado"
+    fi
+done
+
+echo ""
+echo "✅ CORREÇÕES APLICADAS!"
+echo ""
+echo "🔧 PROBLEMAS CORRIGIDOS:"
+echo "   • ClockIcon importado corretamente"
+echo "   • Imports organizados seguindo padrão do projeto"
+echo "   • Navigation com current state corrigido"
+echo "   • Links para Audiências e Prazos funcionando"
+echo ""
+echo "📁 ARQUIVO CORRIGIDO:"
+echo "   • frontend/src/components/layout/AdminLayout/index.js"
+echo ""
+echo "💾 BACKUP CRIADO:"
+echo "   • AdminLayout backup salvo com timestamp"
+echo ""
+echo "🧪 TESTE AS ROTAS:"
+echo "   1. http://localhost:3000/admin"
+echo "   2. http://localhost:3000/admin/audiencias"
+echo "   3. http://localhost:3000/admin/prazos"
+echo "   4. Clique nos links do menu lateral"
+echo ""
+echo "🎯 ERRO ClockIcon CORRIGIDO!"
+echo ""
+echo "⏭️ PRÓXIMO PASSO:"
+echo "   Testar se a aplicação está funcionando sem erros"
+echo "   Execute 'npm start' e verifique o console"

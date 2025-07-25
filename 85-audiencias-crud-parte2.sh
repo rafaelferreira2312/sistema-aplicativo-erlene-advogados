@@ -1,3 +1,24 @@
+#!/bin/bash
+
+# Script 85 - Audiências CRUD Completo (Parte 2/4)
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+
+echo "📅 Criando CRUD completo de Audiências (Parte 2/4)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+echo "📝 1. Atualizando Audiencias.js com CRUD completo..."
+
+# Fazer backup da página atual
+cp frontend/src/pages/admin/Audiencias.js frontend/src/pages/admin/Audiencias.js.backup.$(date +%Y%m%d_%H%M%S)
+
+# Criar página completa de Audiências seguindo padrão Clients.js
+cat > frontend/src/pages/admin/Audiencias.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -386,6 +407,15 @@ const Audiencias = () => {
           </div>
         </div>
       </div>
+EOF
+
+echo "✅ Parte 1 da página Audiencias.js criada!"
+
+echo ""
+echo "⏭️ Continuando com a lista de audiências..."
+
+# Continuar o arquivo (parte 2)
+cat >> frontend/src/pages/admin/Audiencias.js << 'EOF'
 
       {/* Lista de Audiências */}
       <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
@@ -576,3 +606,201 @@ const Audiencias = () => {
 };
 
 export default Audiencias;
+EOF
+
+echo "✅ Audiencias.js completo criado!"
+
+echo "📝 2. Atualizando App.js para incluir rota de nova audiência..."
+
+# Fazer backup do App.js
+cp frontend/src/App.js frontend/src/App.js.backup.$(date +%Y%m%d_%H%M%S)
+
+# Atualizar App.js para incluir NewAudiencia
+cat > frontend/src/App.js << 'EOF'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/auth/Login';
+import AdminLayout from './components/layout/AdminLayout';
+import Dashboard from './pages/admin/Dashboard';
+import Clients from './pages/admin/Clients';
+import NewClient from './components/clients/NewClient';
+import Processes from './pages/admin/Processes';
+import NewProcess from './components/processes/NewProcess';
+import Audiencias from './pages/admin/Audiencias';
+import NewAudiencia from './components/audiencias/NewAudiencia';
+import Prazos from './pages/admin/Prazos';
+
+// Portal Cliente (temporário)
+const ClientPortal = () => {
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userType');
+    window.location.href = '/login';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-gradient-erlene text-white p-4">
+        <div className="flex justify-between items-center max-w-7xl mx-auto">
+          <h1 className="text-xl font-bold">Portal do Cliente - Erlene Advogados</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-700 hover:bg-red-800 px-4 py-2 rounded text-sm"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Portal do Cliente</h2>
+          <p className="text-gray-600">Acompanhe seus processos e documentos</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { title: 'Meus Processos', subtitle: '3 processos ativos', color: 'red', icon: '⚖️' },
+            { title: 'Documentos', subtitle: '12 documentos disponíveis', color: 'blue', icon: '📄' },
+            { title: 'Pagamentos', subtitle: '2 pagamentos pendentes', color: 'green', icon: '💳' }
+          ].map((item) => (
+            <div key={item.title} className="bg-white overflow-hidden shadow-erlene rounded-lg">
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-3">{item.icon}</span>
+                  <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
+                </div>
+                <p className="text-gray-600 mb-4">{item.subtitle}</p>
+                <button className={`bg-${item.color}-600 text-white px-4 py-2 rounded hover:bg-${item.color}-700`}>
+                  Ver {item.title}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de proteção de rota
+const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const userType = localStorage.getItem('userType');
+
+  if (requiredAuth && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!requiredAuth && isAuthenticated) {
+    return <Navigate to={userType === 'cliente' ? '/portal' : '/admin'} replace />;
+  }
+
+  if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return children;
+};
+
+// Página 404
+const NotFoundPage = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <h1 className="text-6xl font-bold text-gray-400 mb-4">404</h1>
+      <p className="text-gray-600 mb-4">Página não encontrada</p>
+      <a href="/login" className="bg-gradient-erlene text-white px-4 py-2 rounded hover:shadow-erlene">
+        Voltar ao Login
+      </a>
+    </div>
+  </div>
+);
+
+// App principal
+function App() {
+  return (
+    <Router>
+      <div className="App h-screen">
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          <Route
+            path="/login"
+            element={
+              <ProtectedRoute requiredAuth={false}>
+                <Login />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedTypes={['admin']}>
+                <AdminLayout>
+                  <Routes>
+                    <Route path="" element={<Dashboard />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="clientes" element={<Clients />} />
+                    <Route path="clientes/novo" element={<NewClient />} />
+                    <Route path="processos" element={<Processes />} />
+                    <Route path="processos/novo" element={<NewProcess />} />
+                    <Route path="audiencias" element={<Audiencias />} />
+                    <Route path="audiencias/nova" element={<NewAudiencia />} />
+                    <Route path="prazos" element={<Prazos />} />
+                  </Routes>
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/portal"
+            element={
+              <ProtectedRoute allowedTypes={['cliente']}>
+                <ClientPortal />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+EOF
+
+echo "✅ App.js atualizado com rota de nova audiência!"
+
+echo ""
+echo "🎉 PARTE 2/4 CONCLUÍDA!"
+echo ""
+echo "✅ AUDIÊNCIAS CRUD IMPLEMENTADO:"
+echo "   • Página principal com lista completa"
+echo "   • Filtros por data (hoje, amanhã, semana)"
+echo "   • Estatísticas em tempo real"
+echo "   • Tabela responsiva com todas as informações"
+echo "   • Destaque visual para audiências de hoje"
+echo "   • Ações de visualizar, editar e excluir"
+echo "   • Estado vazio com call-to-action"
+echo ""
+echo "📋 FUNCIONALIDADES:"
+echo "   • Dashboard com cards de estatísticas"
+echo "   • Ações rápidas com contadores"
+echo "   • Filtros inteligentes por data e status"
+echo "   • Busca por processo, cliente ou local"
+echo "   • Design seguindo padrão Erlene"
+echo ""
+echo "🔗 ROTAS CONFIGURADAS:"
+echo "   • /admin/audiencias - Lista de audiências"
+echo "   • /admin/audiencias/nova - Nova audiência"
+echo ""
+echo "⏭️ PRÓXIMA PARTE (3/4):"
+echo "   • Componente EditAudiencia"
+echo "   • CRUD completo de Prazos"
+echo "   • Página de relatórios"
+echo ""
+echo "Digite 'continuar' para Parte 3/4!"
