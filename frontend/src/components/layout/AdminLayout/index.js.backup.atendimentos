@@ -16,8 +16,7 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   BellIcon,
-  MagnifyingGlassIcon,  	
-  BuildingLibraryIcon
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 
 const AdminLayout = ({ children }) => {
@@ -35,10 +34,9 @@ const AdminLayout = ({ children }) => {
     { name: 'Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' || location.pathname === '/admin/dashboard' },
     { name: 'Clientes', href: '/admin/clientes', icon: UsersIcon, current: location.pathname.startsWith('/admin/clientes') },
     { name: 'Processos', href: '/admin/processos', icon: ScaleIcon, current: location.pathname.startsWith('/admin/processos') },
-    { name: 'Audiências', href: '/admin/audiencias', icon: CalendarIcon, current: location.pathname === '/admin/audiencias' },    
+    { name: 'Audiências', href: '/admin/audiencias', icon: CalendarIcon, current: location.pathname === '/admin/audiencias' },
     { name: 'Prazos', href: '/admin/prazos', icon: ClockIcon, current: location.pathname === '/admin/prazos' },
-    { name: 'Atendimentos', href: '/admin/atendimentos', icon: 	
-BuildingLibraryIcon, current: location.pathname.startsWith('/admin/atendimentos') },    
+    { name: 'Atendimentos', href: '/admin/appointments', icon: CalendarIcon, current: location.pathname === '/admin/appointments' },
     { name: 'Financeiro', href: '/admin/financial', icon: CurrencyDollarIcon, current: location.pathname === '/admin/financial' },
     { name: 'Documentos', href: '/admin/documents', icon: DocumentIcon, current: location.pathname === '/admin/documents' },
     { name: 'Kanban', href: '/admin/kanban', icon: ClipboardDocumentListIcon, current: location.pathname === '/admin/kanban' },

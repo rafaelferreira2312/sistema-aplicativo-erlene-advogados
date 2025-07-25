@@ -12,7 +12,8 @@ import NewAudiencia from './components/audiencias/NewAudiencia';
 import EditAudiencia from './components/audiencias/EditAudiencia';
 import Prazos from './pages/admin/Prazos';
 import NewPrazo from './components/prazos/NewPrazo';
-import EditPrazo from './components/prazos/EditPrazo';
+import Atendimentos from './pages/admin/Atendimentos';
+import NewAtendimento from './components/atendimentos/NewAtendimento';
 
 // Portal Cliente (temporário)
 const ClientPortal = () => {
@@ -134,7 +135,8 @@ function App() {
                     <Route path="audiencias/:id/editar" element={<EditAudiencia />} />
                     <Route path="prazos" element={<Prazos />} />
                     <Route path="prazos/novo" element={<NewPrazo />} />
-                    <Route path="prazos/:id/editar" element={<EditPrazo />} />
+                    <Route path="atendimentos" element={<Atendimentos />} />
+                    <Route path="atendimentos/novo" element={<NewAtendimento />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
