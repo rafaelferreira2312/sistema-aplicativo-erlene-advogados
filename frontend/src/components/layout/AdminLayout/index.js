@@ -39,7 +39,7 @@ const AdminLayout = ({ children }) => {
     { name: 'Prazos', href: '/admin/prazos', icon: ClockIcon, current: location.pathname === '/admin/prazos' },
     { name: 'Atendimentos', href: '/admin/atendimentos', icon: BuildingLibraryIcon, current: location.pathname.startsWith('/admin/atendimentos') },
     { name: 'Financeiro', href: '/admin/financeiro', icon: CurrencyDollarIcon, current: location.pathname.startsWith('/admin/financeiro') },
-    { name: 'Documentos', href: '/admin/documents', icon: DocumentIcon, current: location.pathname === '/admin/documents' },
+    { name: 'Documentos', href: '/admin/documentos', icon: DocumentIcon, current: location.pathname === '/admin/documentos' },
     { name: 'Kanban', href: '/admin/kanban', icon: ClipboardDocumentListIcon, current: location.pathname === '/admin/kanban' },
     { name: 'Relatórios', href: '/admin/reports', icon: ChartBarIcon, current: location.pathname === '/admin/reports' },
     { name: 'Usuários', href: '/admin/users', icon: UserGroupIcon, current: location.pathname === '/admin/users' },

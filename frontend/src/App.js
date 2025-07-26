@@ -18,6 +18,8 @@ import NewAtendimento from './components/atendimentos/NewAtendimento';
 import Financeiro from './pages/admin/Financeiro';
 import NewTransacao from './components/financeiro/NewTransacao';
 import EditTransacao from './components/financeiro/EditTransacao';
+import Documentos from './pages/admin/Documentos';
+import NewDocumento from './components/documentos/NewDocumento';
 
 // Portal Cliente (temporário)
 const ClientPortal = () => {
@@ -145,6 +147,8 @@ function App() {
                     <Route path="financeiro" element={<Financeiro />} />
                     <Route path="financeiro/novo" element={<NewTransacao />} />
                     <Route path="financeiro/:id/editar" element={<EditTransacao />} />
+                    <Route path="documentos" element={<Documentos />} />
+                    <Route path="documentos/novo" element={<NewDocumento />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
