@@ -21,6 +21,9 @@ import EditTransacao from './components/financeiro/EditTransacao';
 import Documentos from './pages/admin/Documentos';
 import NewDocumento from './components/documentos/NewDocumento';
 import EditDocumento from './components/documentos/EditDocumento';
+import Kanban from './pages/admin/Kanban';
+import NewTask from './components/kanban/NewTask';
+import EditTask from './components/kanban/EditTask';
 
 // Portal Cliente (temporário)
 const ClientPortal = () => {
@@ -151,6 +154,9 @@ function App() {
                     <Route path="documentos" element={<Documentos />} />
                     <Route path="documentos/novo" element={<NewDocumento />} />
                     <Route path="documentos/:id/editar" element={<EditDocumento />} />
+                    <Route path="kanban" element={<Kanban />} />
+                    <Route path="kanban/nova" element={<NewTask />} />
+                    <Route path="kanban/:id/editar" element={<EditTask />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
