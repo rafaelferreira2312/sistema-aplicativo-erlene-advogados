@@ -5,7 +5,7 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
-  
+  EyeIcon,
   ScaleIcon,
   UserIcon,
   ClockIcon,
@@ -14,9 +14,9 @@ import {
   UserCircleIcon,
   ClockIcon as TimelineIcon
 } from '@heroicons/react/24/outline';
-import ProcessDocumentsModal from '../../components/processes/ProcessDocumentsModal';
-import ProcessClientModal from '../../components/processes/ProcessClientModal';
-import ProcessTimelineModal from '../../components/processes/ProcessTimelineModal';
+import ProcessDocumentsModal from '../components/processes/ProcessDocumentsModal';
+import ProcessClientModal from '../components/processes/ProcessClientModal';
+import ProcessTimelineModal from '../components/processes/ProcessTimelineModal';
 
 const Processes = () => {
   const [processes, setProcesses] = useState([]);

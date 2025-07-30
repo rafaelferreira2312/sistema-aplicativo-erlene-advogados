@@ -5,8 +5,10 @@ import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
 import NewClient from './components/clients/NewClient';
+import EditClient from './components/clients/EditClient';
 import Processes from './pages/admin/Processes';
 import NewProcess from './components/processes/NewProcess';
+import EditProcess from './components/processes/EditProcess';
 import Audiencias from './pages/admin/Audiencias';
 import NewAudiencia from './components/audiencias/NewAudiencia';
 import EditAudiencia from './components/audiencias/EditAudiencia';
@@ -138,8 +140,10 @@ function App() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="clientes" element={<Clients />} />
                     <Route path="clientes/novo" element={<NewClient />} />
+                    <Route path="clientes/:id" element={<EditClient />} />
                     <Route path="processos" element={<Processes />} />
                     <Route path="processos/novo" element={<NewProcess />} />
+                    <Route path="processos/:id" element={<EditProcess />} />
                     <Route path="audiencias" element={<Audiencias />} />
                     <Route path="audiencias/nova" element={<NewAudiencia />} />
                     <Route path="audiencias/:id/editar" element={<EditAudiencia />} />

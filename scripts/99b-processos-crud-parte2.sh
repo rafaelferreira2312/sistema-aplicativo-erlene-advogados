@@ -1,3 +1,25 @@
+#!/bin/bash
+
+# Script 99b - Processos CRUD Completo (Parte 2/2)
+# Autor: Sistema Erlene Advogados
+# Data: $(date +%Y-%m-%d)
+# Enumeração: 99b
+
+echo "⚖️ Criando CRUD completo de Processos (Parte 2/2 - Script 99b)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+echo "📝 1. Criando NewProcess.js (formulário de cadastro)..."
+
+# Criar estrutura se não existir
+mkdir -p frontend/src/components/processes
+
+# Criar NewProcess.js seguindo padrão NewClient.js
+cat > frontend/src/components/processes/NewProcess.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -534,3 +556,95 @@ const NewProcess = () => {
 };
 
 export default NewProcess;
+EOF
+
+echo "✅ NewProcess.js criado!"
+
+echo "📝 2. Atualizando App.js para incluir rotas do NewProcess..."
+
+# Fazer backup do App.js
+cp frontend/src/App.js frontend/src/App.js.backup.newprocess.$(date +%Y%m%d_%H%M%S)
+
+# Adicionar import do NewProcess se não existir
+if ! grep -q "import NewProcess" frontend/src/App.js; then
+    sed -i '/import Processes/a import NewProcess from '\''./components/processes/NewProcess'\'';' frontend/src/App.js
+fi
+
+# Adicionar rota do NewProcess se não existir
+if ! grep -q 'path="processos/novo"' frontend/src/App.js; then
+    sed -i '/path="processos"/a\                    <Route path="processos/novo" element={<NewProcess />} />' frontend/src/App.js
+fi
+
+echo "✅ Rota do NewProcess adicionada ao App.js!"
+
+echo ""
+echo "🎉 SCRIPT 99b CONCLUÍDO!"
+echo ""
+echo "✅ NEWPROCESS 100% COMPLETO:"
+echo "   • Formulário completo de cadastro de processo"
+echo "   • Geração automática de número processual"
+echo "   • Relacionamento com clientes e advogados"
+echo "   • Validação completa com mensagens de erro"
+echo "   • Formatação automática de valores monetários"
+echo "   • Preview do cliente selecionado"
+echo "   • Sistema de prioridades e confidencialidade"
+echo "   • Campos de estratégia jurídica"
+echo "   • Design system Erlene completo"
+echo ""
+echo "📋 FUNCIONALIDADES IMPLEMENTADAS:"
+echo "   • Geração automática de números CNJ"
+echo "   • Seleção de cliente com preview visual"
+echo "   • Seleção de advogado com especialidade"
+echo "   • 7 tipos de processo (Cível, Trabalhista, etc.)"
+echo "   • 4 níveis de prioridade (Baixa, Média, Alta, Urgente)"
+echo "   • Formatação monetária em tempo real"
+echo "   • Validação de datas (início obrigatório)"
+echo "   • Checkbox de processo confidencial"
+echo "   • Campos de observações e estratégia"
+echo ""
+echo "🎯 SEÇÕES DO FORMULÁRIO:"
+echo "   1. **Dados Básicos** - Número, cliente, advogado, assunto"
+echo "   2. **Detalhes Jurídicos** - Vara, juiz, valor, prioridade"
+echo "   3. **Cronograma** - Data início e previsão fim"
+echo "   4. **Observações** - Notas gerais e estratégia jurídica"
+echo ""
+echo "🔢 GERAÇÃO DE NÚMEROS:"
+echo "   • Formato CNJ: 1234567-56.2024.8.26.0001"
+echo "   • Geração automática ou manual"
+echo "   • Botão para gerar novo número"
+echo ""
+echo "👥 RELACIONAMENTOS:"
+echo "   • 5 clientes disponíveis (PF/PJ)"
+echo "   • 5 advogados com especialidades"
+echo "   • Preview visual do cliente selecionado"
+echo ""
+echo "🔗 ROTAS CONFIGURADAS:"
+echo "   • /admin/processos/novo - Cadastro de processo"
+echo ""
+echo "📁 ARQUIVOS CRIADOS:"
+echo "   • frontend/src/components/processes/NewProcess.js"
+echo "   • App.js atualizado com rota"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. http://localhost:3000/admin/processos"
+echo "   2. Clique em 'Novo Processo'"
+echo "   3. Teste geração automática de número"
+echo "   4. Teste seleção de cliente com preview"
+echo "   5. Teste formatação de valor monetário"
+echo ""
+echo "🎯 MÓDULO PROCESSOS COMPLETO:"
+echo "   ✅ Lista de processos com filtros"
+echo "   ✅ Cadastro completo (NewProcess)"
+echo "   • Próximo: EditProcess (Script 99c)"
+echo ""
+echo "⏭️ PRÓXIMO SCRIPT SUGERIDO (99c):"
+echo "   • EditProcess.js (edição de processos)"
+echo "   • Modal de exclusão com confirmação"
+echo "   • Histórico de alterações"
+echo ""
+echo "📊 MÓDULOS ERLENE COMPLETOS:"
+echo "   ✅ Clientes (CRUD 100% funcional)"
+echo "   ✅ Processos (Dashboard + NewProcess)"
+echo "   • Próximo: Audiências, Prazos, Atendimentos..."
+echo ""
+echo "Digite 'continuar' para implementar EditProcess (99c)!"
