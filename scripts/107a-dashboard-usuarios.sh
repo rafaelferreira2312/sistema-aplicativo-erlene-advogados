@@ -1,3 +1,25 @@
+#!/bin/bash
+# Script 107a - Dashboard de Usuários (Parte 1/3)
+# Autor: Sistema Erlene Advogados  
+# Data: $(date +%Y-%m-%d)
+# Enumeração: 107a
+
+echo "🔧 Criando Dashboard de Usuários (Parte 1 - Script 107a)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto frontend"
+    exit 1
+fi
+
+# Criar estrutura de pastas
+echo "📁 Criando estrutura para módulo Usuários..."
+mkdir -p frontend/src/pages/admin
+mkdir -p frontend/src/components/users
+
+# Criar página principal de usuários
+echo "👥 Criando página Users.js..."
+cat > frontend/src/pages/admin/Users.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { 
   UserGroupIcon,
@@ -439,3 +461,39 @@ const Users = () => {
 };
 
 export default Users;
+EOF
+
+echo "✅ Dashboard de Usuários criado com sucesso!"
+echo ""
+echo "📋 FUNCIONALIDADES IMPLEMENTADAS:"
+echo "   • Dashboard com estatísticas de usuários"
+echo "   • Cards informativos (Total, Ativos, Advogados, Novos)"
+echo "   • Lista completa de usuários com filtros"
+echo "   • Busca por nome e email"
+echo "   • Filtros por perfil e status"
+echo "   • Tabela responsiva com informações detalhadas"
+echo "   • Ações para visualizar, editar, resetar senha e excluir"
+echo "   • Avatars com iniciais dos nomes"
+echo "   • Formatação de data/hora do último login"
+echo "   • Estados vazios para quando não há resultados"
+echo ""
+echo "👥 PERFIS DE USUÁRIO INCLUÍDOS:"
+echo "   • Administrador (Erlene)"
+echo "   • Advogado Sênior (João)"
+echo "   • Advogado (Maria)"
+echo "   • Assistente Jurídico (Carlos)"
+echo "   • Secretária (Ana)"
+echo "   • Advogado Inativo (Roberto)"
+echo ""
+echo "🔗 ROTA CONFIGURADA:"
+echo "   • /admin/users - Dashboard de usuários"
+echo ""
+echo "📁 ARQUIVO CRIADO:"
+echo "   • frontend/src/pages/admin/Users.js"
+echo ""
+echo "⏭️ PRÓXIMA PARTE (2/3):"
+echo "   • Formulário de cadastro de usuário (NewUser.js)"
+echo "   • Sistema de permissões e roles"
+echo "   • Validações completas"
+echo ""
+echo "Digite 'continuar' para Parte 2/3!"

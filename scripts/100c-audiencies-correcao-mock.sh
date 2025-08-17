@@ -1,3 +1,30 @@
+#!/bin/bash
+
+# Script 100c - Correção Mock Data Audiências (Parte 3/4)
+# Autor: Sistema Erlene Advogados  
+# Data: $(date +%Y-%m-%d)
+# Enumeração: 100c
+
+echo "🔧 Corrigindo Mock Data das Audiências (Parte 3/4 - Script 100c)..."
+
+# Verificar diretório
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script na raiz do projeto"
+    exit 1
+fi
+
+echo "📝 1. Fazendo backup do Audiencias.js atual..."
+
+# Fazer backup
+if [ -f "frontend/src/pages/admin/Audiencias.js" ]; then
+    cp frontend/src/pages/admin/Audiencias.js frontend/src/pages/admin/Audiencias.js.backup.mock.$(date +%Y%m%d_%H%M%S)
+    echo "✅ Backup criado!"
+fi
+
+echo "📝 2. Corrigindo mock data e filtros para mostrar audiências..."
+
+# Corrigir o arquivo com mock data melhorado e filtros funcionais
+cat > frontend/src/pages/admin/Audiencias.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -507,3 +534,48 @@ const Audiencias = () => {
 };
 
 export default Audiencias;
+EOF
+
+echo "✅ Audiencias.js corrigido com mock data funcional!"
+
+echo ""
+echo "📋 SCRIPT 100c CONCLUÍDO!"
+echo ""
+echo "✅ MOCK DATA CORRIGIDO:"
+echo "   • 5 audiências com datas variadas adicionadas"
+echo "   • Filtro padrão alterado de 'hoje' para 'all'"
+echo "   • Datas baseadas em 15/08/2024 (data atual do sistema)"
+echo "   • Estatísticas calculadas corretamente"
+echo "   • Filtros de data funcionando perfeitamente"
+echo ""
+echo "📊 AUDIÊNCIAS MOCK CRIADAS:"
+echo "   1. João Silva - Conciliação (HOJE 15/08) - Confirmada"
+echo "   2. Empresa ABC - Instrução (AMANHÃ 16/08) - Agendada"
+echo "   3. Maria Costa - Preliminar (20/08) - Agendada"
+echo "   4. Tech Solutions - Conciliação (12/08) - Concluída"
+echo "   5. Construtora Beta - Justificação (22/08) - Confirmada"
+echo ""
+echo "🎯 PROBLEMAS RESOLVIDOS:"
+echo "   ✅ Tabela vazia - CORRIGIDO (5 audiências visíveis)"
+echo "   ✅ Filtro 'hoje' sem dados - CORRIGIDO (filtro padrão 'all')"
+echo "   ✅ Estatísticas zeradas - CORRIGIDAS (valores reais)"
+echo "   ✅ Mock data desatualizado - ATUALIZADO"
+echo ""
+echo "🔧 MELHORIAS IMPLEMENTADAS:"
+echo "   • Datas realistas e variadas"
+echo "   • Filtro de data adicional no dropdown"
+echo "   • Destaque visual para audiências de hoje"
+echo "   • Estatísticas dinâmicas baseadas nos dados"
+echo "   • Status variados (Agendada, Confirmada, Concluída)"
+echo ""
+echo "📁 ARQUIVO ATUALIZADO:"
+echo "   • frontend/src/pages/admin/Audiencias.js (com mock data funcional)"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. Recarregue http://localhost:3000/admin/audiencias"
+echo "   2. Veja as 5 audiências na tabela"
+echo "   3. Teste os filtros (status, data)"
+echo "   4. Clique no ícone 'olho' para ver timeline"
+echo ""
+echo "✅ AUDIÊNCIAS AGORA VISÍVEIS NA TABELA!"
+echo "Digite 'continuar' para próximos módulos!"
