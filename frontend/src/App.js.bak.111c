@@ -6,8 +6,6 @@ import PortalDashboard from './pages/portal/PortalDashboard';
 import PortalProcessos from './pages/portal/PortalProcessos';
 import PortalDocumentos from './pages/portal/PortalDocumentos';
 import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
@@ -39,26 +37,23 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Componente de proteção simples SEM LOOPS
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
   const userType = localStorage.getItem('userType');
 
-  // Se requer autenticação
-  if (requiredAuth) {
-    // Para sistema administrativo
-    if (allowedTypes.includes('admin') && !isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    
-    // Para portal do cliente
-    if (allowedTypes.includes('cliente') && !portalAuth) {
-      return <Navigate to="/portal/login" replace />;
-    }
+  // Para sistema administrativo
+  if (allowedTypes.includes('admin') && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Para portal do cliente
+  if (allowedTypes.includes('cliente') && !portalAuth) {
+    return <Navigate to="/portal/login" replace />;
   }
 
-  // Se não requer autenticação e está logado, redirecionar
+  // Se não requer auth e está logado, redirecionar
   if (!requiredAuth && (isAuthenticated || portalAuth)) {
     if (userType === 'cliente') {
       return <Navigate to="/portal/dashboard" replace />;
@@ -67,9 +62,17 @@ const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) =>
     }
   }
 
-  // Verificar tipo de usuário permitido
+  // Verificar tipo permitido
   if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h1>
+        <p className="text-gray-600 mb-4">Você não tem permissão para acessar esta página.</p>
+        <a href="/login" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+          Fazer Login
+        </a>
+      </div>
+    </div>;
   }
 
   return children;
@@ -88,16 +91,16 @@ const NotFoundPage = () => (
   </div>
 );
 
-// App principal
+// App principal SEM LOOPS
 function App() {
   return (
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
+          {/* Página inicial simples */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
-          {/* Login Administrativo */}
+          {/* Login administrativo */}
           <Route
             path="/login"
             element={
@@ -107,7 +110,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Login */}
+          {/* Portal do cliente - Login */}
           <Route
             path="/portal/login"
             element={
@@ -117,7 +120,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Dashboard */}
+          {/* Portal do cliente - Dashboard */}
           <Route
             path="/portal/dashboard"
             element={
@@ -127,7 +130,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Processos */}
+          {/* Portal do cliente - Processos */}
           <Route
             path="/portal/processos"
             element={
@@ -137,7 +140,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Documentos */}
+          {/* Portal do cliente - Documentos */}
           <Route
             path="/portal/documentos"
             element={
@@ -147,7 +150,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Pagamentos */}
+          {/* Portal do cliente - Pagamentos */}
           <Route
             path="/portal/pagamentos"
             element={
@@ -157,27 +160,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Mensagens */}
-          <Route
-            path="/portal/mensagens"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Perfil */}
-          <Route
-            path="/portal/perfil"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Sistema Administrativo */}
+          {/* Sistema administrativo */}
           <Route
             path="/admin/*"
             element={

@@ -42,7 +42,7 @@ const Login = () => {
       } else if (formData.email === 'cliente@teste.com' && formData.password === '123456') {
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userType', 'cliente');
-        navigate('/portal');
+        navigate('/portal/dashboard');
       } else {
         setError('Credenciais inválidas. Verifique email e senha.');
       }

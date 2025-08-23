@@ -1,13 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
-import PortalLogin from './pages/portal/PortalLogin';
 import PortalDashboard from './pages/portal/PortalDashboard';
-import PortalProcessos from './pages/portal/PortalProcessos';
-import PortalDocumentos from './pages/portal/PortalDocumentos';
-import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
+import PortalLogin from './pages/portal/PortalLogin';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
@@ -39,7 +34,7 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Componente de proteção de rota
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
@@ -94,7 +89,6 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Login Administrativo */}
@@ -108,14 +102,6 @@ function App() {
           />
           
           {/* Portal do Cliente - Login */}
-          <Route
-            path="/portal/login"
-            element={
-              <ProtectedRoute requiredAuth={false}>
-                <PortalLogin />
-              </ProtectedRoute>
-            }
-          />
           
           {/* Portal do Cliente - Dashboard */}
           <Route
@@ -126,53 +112,61 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
-          {/* Portal do Cliente - Processos */}
           <Route
-            path="/portal/processos"
+          
+          {/* Portal do Cliente - Dashboard */}
+          <Route
+            path="/portal/dashboard"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalProcessos />
+                <PortalDashboard />
               </ProtectedRoute>
             }
           />
+            path="/portal/login"
           
-          {/* Portal do Cliente - Documentos */}
+          {/* Portal do Cliente - Dashboard */}
           <Route
-            path="/portal/documentos"
+            path="/portal/dashboard"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDocumentos />
+                <PortalDashboard />
               </ProtectedRoute>
             }
           />
+            element={
           
-          {/* Portal do Cliente - Pagamentos */}
+          {/* Portal do Cliente - Dashboard */}
           <Route
-            path="/portal/pagamentos"
+            path="/portal/dashboard"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPagamentos />
+                <PortalDashboard />
               </ProtectedRoute>
             }
           />
+              <ProtectedRoute requiredAuth={false}>
           
-          {/* Portal do Cliente - Mensagens */}
+          {/* Portal do Cliente - Dashboard */}
           <Route
-            path="/portal/mensagens"
+            path="/portal/dashboard"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
+                <PortalDashboard />
               </ProtectedRoute>
             }
           />
+                <PortalLogin />
           
-          {/* Portal do Cliente - Perfil */}
+          {/* Portal do Cliente - Dashboard */}
           <Route
-            path="/portal/perfil"
+            path="/portal/dashboard"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
+                <PortalDashboard />
+              </ProtectedRoute>
+            }
+          />
               </ProtectedRoute>
             }
           />

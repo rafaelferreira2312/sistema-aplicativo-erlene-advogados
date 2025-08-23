@@ -1,13 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
-import PortalLogin from './pages/portal/PortalLogin';
-import PortalDashboard from './pages/portal/PortalDashboard';
-import PortalProcessos from './pages/portal/PortalProcessos';
-import PortalDocumentos from './pages/portal/PortalDocumentos';
-import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
@@ -39,35 +32,72 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Portal Cliente (temporário)
+const ClientPortal = () => {
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userType');
+    window.location.href = '/login';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-gradient-erlene text-white p-4">
+        <div className="flex justify-between items-center max-w-7xl mx-auto">
+          <h1 className="text-xl font-bold">Portal do Cliente - Erlene Advogados</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-700 hover:bg-red-800 px-4 py-2 rounded text-sm"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Portal do Cliente</h2>
+          <p className="text-gray-600">Acompanhe seus processos e documentos</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { title: 'Meus Processos', subtitle: '3 processos ativos', color: 'red', icon: '⚖️' },
+            { title: 'Documentos', subtitle: '12 documentos disponíveis', color: 'blue', icon: '📄' },
+            { title: 'Pagamentos', subtitle: '2 pagamentos pendentes', color: 'green', icon: '💳' }
+          ].map((item) => (
+            <div key={item.title} className="bg-white overflow-hidden shadow-erlene rounded-lg">
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-3">{item.icon}</span>
+                  <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
+                </div>
+                <p className="text-gray-600 mb-4">{item.subtitle}</p>
+                <button className={`bg-${item.color}-600 text-white px-4 py-2 rounded hover:bg-${item.color}-700`}>
+                  Ver {item.title}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de proteção de rota
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const portalAuth = localStorage.getItem('portalAuth') === 'true';
   const userType = localStorage.getItem('userType');
 
-  // Se requer autenticação
-  if (requiredAuth) {
-    // Para sistema administrativo
-    if (allowedTypes.includes('admin') && !isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    
-    // Para portal do cliente
-    if (allowedTypes.includes('cliente') && !portalAuth) {
-      return <Navigate to="/portal/login" replace />;
-    }
+  if (requiredAuth && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Se não requer autenticação e está logado, redirecionar
-  if (!requiredAuth && (isAuthenticated || portalAuth)) {
-    if (userType === 'cliente') {
-      return <Navigate to="/portal/dashboard" replace />;
-    } else {
-      return <Navigate to="/admin" replace />;
-    }
+  if (!requiredAuth && isAuthenticated) {
+    return <Navigate to={userType === 'cliente' ? '/portal' : '/admin'} replace />;
   }
 
-  // Verificar tipo de usuário permitido
   if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -81,7 +111,7 @@ const NotFoundPage = () => (
     <div className="text-center">
       <h1 className="text-6xl font-bold text-gray-400 mb-4">404</h1>
       <p className="text-gray-600 mb-4">Página não encontrada</p>
-      <a href="/login" className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800">
+      <a href="/login" className="bg-gradient-erlene text-white px-4 py-2 rounded hover:shadow-erlene">
         Voltar ao Login
       </a>
     </div>
@@ -94,10 +124,8 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
-          {/* Login Administrativo */}
           <Route
             path="/login"
             element={
@@ -107,77 +135,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Login */}
-          <Route
-            path="/portal/login"
-            element={
-              <ProtectedRoute requiredAuth={false}>
-                <PortalLogin />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Dashboard */}
-          <Route
-            path="/portal/dashboard"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDashboard />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Processos */}
-          <Route
-            path="/portal/processos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalProcessos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Documentos */}
-          <Route
-            path="/portal/documentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDocumentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Pagamentos */}
-          <Route
-            path="/portal/pagamentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPagamentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Mensagens */}
-          <Route
-            path="/portal/mensagens"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Perfil */}
-          <Route
-            path="/portal/perfil"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Sistema Administrativo */}
           <Route
             path="/admin/*"
             element={
@@ -216,6 +173,15 @@ function App() {
                     <Route path="settings" element={<Settings />} />
                   </Routes>
                 </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/portal"
+            element={
+              <ProtectedRoute allowedTypes={['cliente']}>
+                <ClientPortal />
               </ProtectedRoute>
             }
           />

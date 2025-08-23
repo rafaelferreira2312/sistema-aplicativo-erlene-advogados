@@ -6,8 +6,6 @@ import PortalDashboard from './pages/portal/PortalDashboard';
 import PortalProcessos from './pages/portal/PortalProcessos';
 import PortalDocumentos from './pages/portal/PortalDocumentos';
 import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
@@ -39,7 +37,7 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Componente de proteção de rota
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
@@ -94,7 +92,6 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Login Administrativo */}
@@ -107,7 +104,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Login */}
+          {/* Portal do Cliente */}
           <Route
             path="/portal/login"
             element={
@@ -117,7 +114,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Dashboard */}
           <Route
             path="/portal/dashboard"
             element={
@@ -127,7 +123,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Processos */}
           <Route
             path="/portal/processos"
             element={
@@ -137,7 +132,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Documentos */}
           <Route
             path="/portal/documentos"
             element={
@@ -147,32 +141,11 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Pagamentos */}
           <Route
             path="/portal/pagamentos"
             element={
               <ProtectedRoute allowedTypes={['cliente']}>
                 <PortalPagamentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Mensagens */}
-          <Route
-            path="/portal/mensagens"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Perfil */}
-          <Route
-            path="/portal/perfil"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
               </ProtectedRoute>
             }
           />

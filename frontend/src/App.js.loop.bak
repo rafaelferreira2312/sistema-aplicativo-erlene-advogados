@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import PortalLogin from './pages/portal/PortalLogin';
 import PortalDashboard from './pages/portal/PortalDashboard';
@@ -39,40 +39,90 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
-const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const portalAuth = localStorage.getItem('portalAuth') === 'true';
-  const userType = localStorage.getItem('userType');
+// Página inicial que redireciona sem Navigate
+const HomePage = () => {
+  React.useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const portalAuth = localStorage.getItem('portalAuth') === 'true';
+    const userType = localStorage.getItem('userType');
 
-  // Se requer autenticação
-  if (requiredAuth) {
-    // Para sistema administrativo
-    if (allowedTypes.includes('admin') && !isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    
-    // Para portal do cliente
-    if (allowedTypes.includes('cliente') && !portalAuth) {
-      return <Navigate to="/portal/login" replace />;
-    }
-  }
-
-  // Se não requer autenticação e está logado, redirecionar
-  if (!requiredAuth && (isAuthenticated || portalAuth)) {
-    if (userType === 'cliente') {
-      return <Navigate to="/portal/dashboard" replace />;
+    if (isAuthenticated && userType === 'admin') {
+      window.location.href = '/admin';
+    } else if (portalAuth && userType === 'cliente') {
+      window.location.href = '/portal/dashboard';
     } else {
-      return <Navigate to="/admin" replace />;
+      window.location.href = '/login';
     }
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Redirecionando...</p>
+      </div>
+    </div>
+  );
+};
+
+// Componente de proteção de rota sem Navigate
+const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
+  const [loading, setLoading] = React.useState(true);
+  const [authorized, setAuthorized] = React.useState(false);
+
+  React.useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const portalAuth = localStorage.getItem('portalAuth') === 'true';
+    const userType = localStorage.getItem('userType');
+
+    // Se requer autenticação
+    if (requiredAuth) {
+      // Para sistema administrativo
+      if (allowedTypes.includes('admin') && !isAuthenticated) {
+        window.location.href = '/login';
+        return;
+      }
+      
+      // Para portal do cliente
+      if (allowedTypes.includes('cliente') && !portalAuth) {
+        window.location.href = '/portal/login';
+        return;
+      }
+    }
+
+    // Se não requer autenticação e está logado, redirecionar
+    if (!requiredAuth && (isAuthenticated || portalAuth)) {
+      if (userType === 'cliente') {
+        window.location.href = '/portal/dashboard';
+        return;
+      } else {
+        window.location.href = '/admin';
+        return;
+      }
+    }
+
+    // Verificar tipo de usuário permitido
+    if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
+      window.location.href = '/unauthorized';
+      return;
+    }
+
+    setAuthorized(true);
+    setLoading(false);
+  }, [requiredAuth, allowedTypes]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando acesso...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Verificar tipo de usuário permitido
-  if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
-    return <Navigate to="/unauthorized" replace />;
-  }
-
-  return children;
+  return authorized ? children : null;
 };
 
 // Página 404
@@ -94,10 +144,8 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<HomePage />} />
           
-          {/* Login Administrativo */}
           <Route
             path="/login"
             element={
@@ -107,7 +155,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Login */}
           <Route
             path="/portal/login"
             element={
@@ -117,7 +164,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Dashboard */}
           <Route
             path="/portal/dashboard"
             element={
@@ -127,7 +173,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Processos */}
           <Route
             path="/portal/processos"
             element={
@@ -137,7 +182,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Documentos */}
           <Route
             path="/portal/documentos"
             element={
@@ -147,7 +191,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Pagamentos */}
           <Route
             path="/portal/pagamentos"
             element={
@@ -157,7 +200,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Mensagens */}
           <Route
             path="/portal/mensagens"
             element={
@@ -167,7 +209,6 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente - Perfil */}
           <Route
             path="/portal/perfil"
             element={
@@ -177,7 +218,6 @@ function App() {
             }
           />
           
-          {/* Sistema Administrativo */}
           <Route
             path="/admin/*"
             element={

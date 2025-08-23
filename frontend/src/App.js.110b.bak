@@ -2,12 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import PortalLogin from './pages/portal/PortalLogin';
-import PortalDashboard from './pages/portal/PortalDashboard';
-import PortalProcessos from './pages/portal/PortalProcessos';
-import PortalDocumentos from './pages/portal/PortalDocumentos';
-import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
@@ -39,7 +33,7 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Componente de proteção de rota
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
@@ -94,7 +88,6 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
-          {/* Rota raiz redireciona para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Login Administrativo */}
@@ -113,66 +106,6 @@ function App() {
             element={
               <ProtectedRoute requiredAuth={false}>
                 <PortalLogin />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Dashboard */}
-          <Route
-            path="/portal/dashboard"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDashboard />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Processos */}
-          <Route
-            path="/portal/processos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalProcessos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Documentos */}
-          <Route
-            path="/portal/documentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDocumentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Pagamentos */}
-          <Route
-            path="/portal/pagamentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPagamentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Mensagens */}
-          <Route
-            path="/portal/mensagens"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente - Perfil */}
-          <Route
-            path="/portal/perfil"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
               </ProtectedRoute>
             }
           />
