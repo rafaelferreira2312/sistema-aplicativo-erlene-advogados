@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -15,18 +15,5 @@ class ExampleTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-    }
-
-    /**
-     * Test API health check.
-     */
-    public function test_api_health_check(): void
-    {
-        $response = $this->get('/health');
-
-        $response->assertStatus(200)
-                ->assertJson([
-                    'status' => 'ok'
-                ]);
     }
 }
