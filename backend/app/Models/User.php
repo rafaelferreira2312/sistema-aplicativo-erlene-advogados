@@ -32,6 +32,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
         'ultimo_acesso' => 'datetime',
+        'password' => 'hashed',
     ];
 
     // JWT Methods
@@ -54,31 +55,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Unidade::class);
     }
 
-    public function clientes()
-    {
-        return $this->hasMany(Cliente::class, 'responsavel_id');
-    }
-
-    public function processos()
-    {
-        return $this->hasMany(Processo::class, 'advogado_id');
-    }
-
-    public function atendimentos()
-    {
-        return $this->hasMany(Atendimento::class, 'advogado_id');
-    }
-
-    public function tarefas()
-    {
-        return $this->hasMany(Tarefa::class, 'responsavel_id');
-    }
-
-    public function notificacoes()
-    {
-        return $this->hasMany(Notificacao::class, 'usuario_id');
-    }
-
     // Scopes
     public function scopeAtivos($query)
     {
@@ -95,14 +71,14 @@ class User extends Authenticatable implements JWTSubject
         return $query->where('unidade_id', $unidadeId);
     }
 
-    // Accessors
-    public function getNomeCompletoAttribute()
-    {
-        return $this->nome . ($this->oab ? ' - OAB ' . $this->oab : '');
-    }
-
-    public function getIsAdminAttribute()
+    // Helper methods
+    public function isAdmin()
     {
         return in_array($this->perfil, ['admin_geral', 'admin_unidade']);
+    }
+
+    public function isCliente()
+    {
+        return $this->perfil === 'consulta';
     }
 }

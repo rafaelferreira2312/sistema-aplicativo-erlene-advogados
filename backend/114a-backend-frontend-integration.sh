@@ -1,32 +1,26 @@
 #!/bin/bash
 
-# Script 114a - Integração Backend + Frontend - Login Admin e Portal Cliente
-# Sistema Erlene Advogados - Conectar dados reais do banco MySQL
+# Script 114a - Integração Backend + Frontend - Dados Reais do Banco
+# Sistema Erlene Advogados - Conectar frontend React com backend Laravel
 # Data: $(date +%Y-%m-%d)
+# EXECUTE DENTRO DA PASTA: backend/
 
-echo "🔗 Script 114a - Integrando Backend Laravel com Frontend React..."
+echo "🔗 Script 114a - Conectando Frontend React com dados reais do Backend Laravel..."
 
-# Verificar se estamos no diretório correto
-if [ ! -d "backend" ] || [ ! -d "frontend" ]; then
-    echo "❌ Erro: Execute no diretório raiz do projeto (deve ter backend/ e frontend/)"
+# Verificar se estamos no diretório correto (deve executar dentro de backend/)
+if [ ! -f "artisan" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta backend/"
+    echo "📍 Comando correto:"
+    echo "   cd backend"
+    echo "   chmod +x 114a-backend-frontend-integration.sh && ./114a-backend-frontend-integration.sh"
     exit 1
 fi
 
-echo "🚀 1. Verificando estrutura Laravel no Backend..."
+echo "✅ 1. Verificando estrutura Laravel..."
 
-# Verificar se Laravel está instalado
-if [ ! -f "backend/artisan" ]; then
-    echo "❌ Laravel não encontrado. Execute primeiro o script de setup do backend"
-    exit 1
-fi
+echo "🔧 2. Atualizando AuthController para compatibilidade com frontend..."
 
-cd backend
-
-echo "🔧 2. Criando API Controllers para Auth..."
-
-# Criar AuthController para Admin
-mkdir -p app/Http/Controllers/Api
-
+# Atualizar AuthController existente para funcionar com as telas do frontend
 cat > app/Http/Controllers/Api/AuthController.php << 'EOF'
 <?php
 
@@ -37,26 +31,28 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
     /**
-     * Login do Admin/Advogado
+     * Login Admin (compatível com frontend existente)
      */
-    public function loginAdmin(Request $request)
+    public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
+        // Buscar usuário admin (não cliente)
         $user = User::where('email', $request->email)
-                   ->whereIn('perfil', ['admin_geral', 'admin_unidade', 'advogado', 'secretario'])
+                   ->whereNotIn('perfil', ['consulta'])
                    ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
+                'success' => false,
                 'message' => 'Credenciais inválidas',
                 'errors' => [
                     'email' => ['Email ou senha incorretos']
@@ -66,6 +62,7 @@ class AuthController extends Controller
 
         if ($user->status !== 'ativo') {
             return response()->json([
+                'success' => false,
                 'message' => 'Usuário inativo',
                 'errors' => [
                     'email' => ['Usuário desabilitado. Contate o administrador.']
@@ -73,17 +70,24 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $token = $user->createToken('admin-token')->plainTextToken;
+        // Atualizar último acesso
+        $user->update(['ultimo_acesso' => now()]);
+
+        // Gerar token JWT
+        $token = JWTAuth::fromUser($user);
 
         return response()->json([
+            'success' => true,
             'message' => 'Login realizado com sucesso',
             'access_token' => $token,
-            'token_type' => 'Bearer',
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'user' => [
                 'id' => $user->id,
                 'nome' => $user->nome,
                 'email' => $user->email,
                 'perfil' => $user->perfil,
+                'oab' => $user->oab,
                 'unidade_id' => $user->unidade_id,
                 'unidade' => $user->unidade ? [
                     'id' => $user->unidade->id,
@@ -96,9 +100,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Login do Portal do Cliente
+     * Login Portal Cliente (compatível com PortalLogin.js)
      */
-    public function loginPortal(Request $request)
+    public function portalLogin(Request $request)
     {
         $request->validate([
             'cpf_cnpj' => 'required|string',
@@ -108,12 +112,14 @@ class AuthController extends Controller
         // Remover formatação do CPF/CNPJ
         $cpfCnpj = preg_replace('/[^0-9]/', '', $request->cpf_cnpj);
 
+        // Buscar cliente
         $user = User::where('cpf', $cpfCnpj)
                    ->where('perfil', 'consulta')
                    ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
+                'success' => false,
                 'message' => 'CPF/CNPJ ou senha incorretos',
                 'errors' => [
                     'cpf_cnpj' => ['CPF/CNPJ ou senha incorretos']
@@ -123,14 +129,19 @@ class AuthController extends Controller
 
         if ($user->status !== 'ativo') {
             return response()->json([
-                'message' => 'Cliente inativo',
+                'success' => false,
+                'message' => 'Acesso desabilitado',
                 'errors' => [
                     'cpf_cnpj' => ['Acesso desabilitado. Contate o escritório.']
                 ]
             ], 403);
         }
 
-        $token = $user->createToken('portal-token')->plainTextToken;
+        // Atualizar último acesso
+        $user->update(['ultimo_acesso' => now()]);
+
+        // Gerar token JWT
+        $token = JWTAuth::fromUser($user);
 
         // Formatar CPF/CNPJ para exibição
         $cpfCnpjFormatado = strlen($cpfCnpj) === 11 
@@ -138,9 +149,11 @@ class AuthController extends Controller
             : preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpj);
 
         return response()->json([
+            'success' => true,
             'message' => 'Login realizado com sucesso',
             'access_token' => $token,
-            'token_type' => 'Bearer',
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'user' => [
                 'id' => $user->id,
                 'nome' => $user->nome,
@@ -151,7 +164,8 @@ class AuthController extends Controller
                 'unidade' => $user->unidade ? [
                     'id' => $user->unidade->id,
                     'nome' => $user->unidade->nome,
-                    'telefone' => $user->unidade->telefone
+                    'telefone' => $user->unidade->telefone,
+                    'email' => $user->unidade->email
                 ] : null
             ]
         ]);
@@ -162,19 +176,36 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user()->load('unidade');
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuário não encontrado'
+                ], 404);
+            }
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'nome' => $user->nome,
-                'email' => $user->email,
-                'perfil' => $user->perfil,
-                'cpf' => $user->cpf,
-                'telefone' => $user->telefone,
-                'unidade' => $user->unidade
-            ]
-        ]);
+            return response()->json([
+                'success' => true,
+                'user' => [
+                    'id' => $user->id,
+                    'nome' => $user->nome,
+                    'email' => $user->email,
+                    'perfil' => $user->perfil,
+                    'cpf' => $user->cpf,
+                    'telefone' => $user->telefone,
+                    'oab' => $user->oab,
+                    'ultimo_acesso' => $user->ultimo_acesso,
+                    'unidade' => $user->unidade
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token inválido'
+            ], 401);
+        }
     }
 
     /**
@@ -182,199 +213,46 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'message' => 'Logout realizado com sucesso'
-        ]);
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Logout realizado com sucesso'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao fazer logout'
+            ], 500);
+        }
     }
 
     /**
      * Refresh Token
      */
-    public function refresh(Request $request)
+    public function refresh()
     {
-        $user = $request->user();
-        $user->currentAccessToken()->delete();
-        
-        $token = $user->createToken('refresh-token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
+        try {
+            $newToken = JWTAuth::refresh();
+            
+            return response()->json([
+                'success' => true,
+                'access_token' => $newToken,
+                'token_type' => 'bearer',
+                'expires_in' => JWTAuth::factory()->getTTL() * 60
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Não foi possível renovar o token'
+            ], 401);
+        }
     }
 }
 EOF
 
-echo "🔧 3. Criando Model User com relacionamentos..."
-
-cat > app/Models/User.php << 'EOF'
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Notifiable;
-
-    protected $fillable = [
-        'nome',
-        'email',
-        'password',
-        'cpf',
-        'telefone',
-        'oab',
-        'perfil',
-        'unidade_id',
-        'status',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    /**
-     * Relacionamento com Unidade
-     */
-    public function unidade()
-    {
-        return $this->belongsTo(Unidade::class);
-    }
-
-    /**
-     * Verificar se é admin geral
-     */
-    public function isAdminGeral()
-    {
-        return $this->perfil === 'admin_geral';
-    }
-
-    /**
-     * Verificar se é admin de unidade
-     */
-    public function isAdminUnidade()
-    {
-        return $this->perfil === 'admin_unidade';
-    }
-
-    /**
-     * Verificar se é advogado
-     */
-    public function isAdvogado()
-    {
-        return $this->perfil === 'advogado';
-    }
-
-    /**
-     * Verificar se é cliente (portal)
-     */
-    public function isCliente()
-    {
-        return $this->perfil === 'consulta';
-    }
-
-    /**
-     * Verificar se tem acesso administrativo
-     */
-    public function hasAdminAccess()
-    {
-        return in_array($this->perfil, ['admin_geral', 'admin_unidade', 'advogado']);
-    }
-
-    /**
-     * Scope para filtrar por perfil
-     */
-    public function scopePorPerfil($query, $perfil)
-    {
-        return $query->where('perfil', $perfil);
-    }
-
-    /**
-     * Scope para filtrar por unidade
-     */
-    public function scopePorUnidade($query, $unidadeId)
-    {
-        return $query->where('unidade_id', $unidadeId);
-    }
-
-    /**
-     * Scope para usuários ativos
-     */
-    public function scopeAtivos($query)
-    {
-        return $query->where('status', 'ativo');
-    }
-}
-EOF
-
-echo "🔧 4. Criando Model Unidade..."
-
-cat > app/Models/Unidade.php << 'EOF'
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Unidade extends Model
-{
-    use HasFactory;
-
-    protected $table = 'unidades';
-
-    protected $fillable = [
-        'nome',
-        'codigo',
-        'endereco',
-        'cidade',
-        'estado',
-        'cep',
-        'telefone',
-        'email',
-        'cnpj',
-        'status',
-    ];
-
-    /**
-     * Relacionamento com usuários
-     */
-    public function usuarios()
-    {
-        return $this->hasMany(User::class);
-    }
-
-    /**
-     * Scope para unidades ativas
-     */
-    public function scopeAtivas($query)
-    {
-        return $query->where('status', 'ativa');
-    }
-
-    /**
-     * Verificar se é matriz
-     */
-    public function isMatriz()
-    {
-        return $this->codigo === 'MATRIZ';
-    }
-}
-EOF
-
-echo "🔧 5. Atualizando rotas da API..."
+echo "🔧 3. Atualizando rotas API para compatibilidade..."
 
 cat > routes/api.php << 'EOF'
 <?php
@@ -389,23 +267,37 @@ use App\Http\Controllers\Api\AuthController;
 |--------------------------------------------------------------------------
 */
 
-// Rota de teste
+// Rota de teste (pública)
 Route::get('/test', function () {
     return response()->json([
+        'success' => true,
         'message' => 'API Sistema Erlene Advogados funcionando!',
         'version' => '1.0.0',
-        'timestamp' => now()->format('Y-m-d H:i:s')
+        'timestamp' => now()->format('Y-m-d H:i:s'),
+        'environment' => app()->environment()
+    ]);
+});
+
+Route::get('/health', function () {
+    return response()->json([
+        'success' => true,
+        'status' => 'ok',
+        'database' => 'connected',
+        'timestamp' => now()
     ]);
 });
 
 // Rotas de autenticação (públicas)
 Route::prefix('auth')->group(function () {
-    Route::post('/admin/login', [AuthController::class, 'loginAdmin']);
-    Route::post('/portal/login', [AuthController::class, 'loginPortal']);
+    // Login admin (compatível com Login.js do frontend)
+    Route::post('/login', [AuthController::class, 'login']);
+    
+    // Login portal (compatível com PortalLogin.js)
+    Route::post('/portal/login', [AuthController::class, 'portalLogin']);
 });
 
-// Rotas protegidas (requer autenticação)
-Route::middleware('auth:sanctum')->group(function () {
+// Rotas protegidas (requer JWT)
+Route::middleware('auth:api')->group(function () {
     
     // Rotas de auth para usuários logados
     Route::prefix('auth')->group(function () {
@@ -414,26 +306,38 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
     });
     
-    // Futuras rotas protegidas aqui
+    // Dashboard stats (teste de rota protegida)
     Route::get('/dashboard/stats', function () {
+        $user = auth()->user();
+        
         return response()->json([
-            'message' => 'Dashboard stats - endpoint protegido',
-            'user' => auth()->user()->only(['id', 'nome', 'perfil'])
+            'success' => true,
+            'message' => 'Dashboard stats',
+            'data' => [
+                'user_info' => [
+                    'id' => $user->id,
+                    'nome' => $user->nome,
+                    'perfil' => $user->perfil
+                ],
+                'stats' => [
+                    'total_users' => \App\Models\User::count(),
+                    'active_users' => \App\Models\User::where('status', 'ativo')->count(),
+                    'last_login' => $user->ultimo_acesso
+                ]
+            ]
         ]);
     });
-});
-
-// Rota para verificar se API está funcionando (sem autenticação)
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'database' => 'connected',
-        'timestamp' => now()
-    ]);
+    
+    // Futuras rotas protegidas aqui...
 });
 EOF
 
-echo "🔧 6. Configurando CORS para desenvolvimento..."
+echo "🔧 4. Atualizando CORS para desenvolvimento local..."
+
+# Verificar se o arquivo cors.php existe
+if [ ! -f "config/cors.php" ]; then
+    php artisan config:publish cors
+fi
 
 cat > config/cors.php << 'EOF'
 <?php
@@ -448,9 +352,13 @@ return [
         'http://127.0.0.1:3000',
         'http://localhost:3001',
         'http://127.0.0.1:3001',
+        'http://localhost:8000',
     ],
     
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://localhost:\d+$#',
+        '#^http://127\.0\.0\.1:\d+$#',
+    ],
     
     'allowed_headers' => ['*'],
     
@@ -462,14 +370,13 @@ return [
 ];
 EOF
 
-echo "📊 7. Executando migrations para criar estrutura..."
+echo "📊 5. Executando migrations e seeders com dados de teste..."
 
-# Executar migrations fresh (cuidado: apaga dados existentes)
-php artisan migrate:fresh --seed
+# Executar migrations fresh (limpa e recria o banco)
+php artisan migrate:fresh
 
-echo "🧪 8. Criando seeders com dados de teste reais..."
-
-cat > database/seeders/TestDataSeeder.php << 'EOF'
+# Criar seeder com dados compatíveis com o frontend
+cat > database/seeders/FrontendTestSeeder.php << 'EOF'
 <?php
 
 namespace Database\Seeders;
@@ -479,7 +386,7 @@ use App\Models\Unidade;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class TestDataSeeder extends Seeder
+class FrontendTestSeeder extends Seeder
 {
     public function run(): void
     {
@@ -510,7 +417,9 @@ class TestDataSeeder extends Seeder
             'status' => 'ativa',
         ]);
 
-        // 2. Admin Geral
+        // 2. USUÁRIOS COMPATÍVEIS COM FRONTEND
+
+        // Admin principal (compatível com Login.js)
         User::create([
             'nome' => 'Dra. Erlene Chaves Silva',
             'email' => 'admin@erlene.com',
@@ -523,7 +432,7 @@ class TestDataSeeder extends Seeder
             'status' => 'ativo',
         ]);
 
-        // 3. Admin Unidade - Filial RJ
+        // Admin RJ
         User::create([
             'nome' => 'Dr. João Silva Santos',
             'email' => 'admin.rj@erlene.com',
@@ -536,7 +445,7 @@ class TestDataSeeder extends Seeder
             'status' => 'ativo',
         ]);
 
-        // 4. Advogados
+        // Advogada
         User::create([
             'nome' => 'Dra. Maria Costa Lima',
             'email' => 'maria.advogada@erlene.com',
@@ -549,21 +458,24 @@ class TestDataSeeder extends Seeder
             'status' => 'ativo',
         ]);
 
-        // 5. Clientes para Portal
+        // CLIENTES PORTAL (compatíveis com PortalLogin.js)
+
+        // Cliente teste do frontend (mantém compatibilidade)
         User::create([
-            'nome' => 'Carlos Eduardo Pereira',
-            'email' => 'carlos.pereira@cliente.com',
+            'nome' => 'Cliente Teste',
+            'email' => 'cliente@teste.com',
             'password' => Hash::make('123456'),
-            'cpf' => '12345678900',
+            'cpf' => '12345678900', // Sem formatação no banco
             'telefone' => '(11) 96666-4444',
             'perfil' => 'consulta',
             'unidade_id' => $matriz->id,
             'status' => 'ativo',
         ]);
 
+        // Outros clientes
         User::create([
-            'nome' => 'Ana Paula Ferreira',
-            'email' => 'ana.ferreira@cliente.com',
+            'nome' => 'Carlos Eduardo Pereira',
+            'email' => 'carlos.pereira@cliente.com',
             'password' => Hash::make('123456'),
             'cpf' => '98765432100',
             'telefone' => '(11) 95555-5555',
@@ -572,6 +484,7 @@ class TestDataSeeder extends Seeder
             'status' => 'ativo',
         ]);
 
+        // Empresa (CNPJ)
         User::create([
             'nome' => 'Tech Solutions Ltda',
             'email' => 'contato@techsolutions.com',
@@ -582,11 +495,23 @@ class TestDataSeeder extends Seeder
             'unidade_id' => $matriz->id,
             'status' => 'ativo',
         ]);
+
+        // Cliente RJ
+        User::create([
+            'nome' => 'Fernanda Santos',
+            'email' => 'fernanda.santos@cliente.com',
+            'password' => Hash::make('123456'),
+            'cpf' => '78945612300',
+            'telefone' => '(21) 94444-5555',
+            'perfil' => 'consulta',
+            'unidade_id' => $filialRj->id,
+            'status' => 'ativo',
+        ]);
     }
 }
 EOF
 
-# Atualizar DatabaseSeeder para incluir o novo seeder
+# Atualizar DatabaseSeeder
 cat > database/seeders/DatabaseSeeder.php << 'EOF'
 <?php
 
@@ -599,66 +524,158 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            TestDataSeeder::class,
+            FrontendTestSeeder::class,
         ]);
     }
 }
 EOF
 
 # Executar os seeders
-php artisan db:seed --class=TestDataSeeder
+php artisan db:seed --class=FrontendTestSeeder
 
-echo "🧪 9. Testando API com dados reais..."
+echo "🧪 6. Testando APIs com dados reais..."
 
 # Iniciar servidor Laravel em background para testes
 php artisan serve --port=8000 &
 LARAVEL_PID=$!
 sleep 3
 
-echo "Testando endpoint de saúde da API:"
+echo "Testando endpoint de saúde:"
 curl -s http://localhost:8000/api/health | head -3
 
 echo ""
 echo ""
-echo "Testando login admin:"
-curl -s -X POST http://localhost:8000/api/auth/admin/login \
+echo "Testando login admin (admin@erlene.com):"
+ADMIN_RESPONSE=$(curl -s -X POST http://localhost:8000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@erlene.com","password":"123456"}' | head -5
+  -d '{"email":"admin@erlene.com","password":"123456"}')
+echo $ADMIN_RESPONSE | head -5
 
 echo ""
 echo ""
-echo "Testando login portal (CPF com formatação):"
-curl -s -X POST http://localhost:8000/api/auth/portal/login \
+echo "Testando login portal cliente (CPF: 123.456.789-00):"
+PORTAL_RESPONSE=$(curl -s -X POST http://localhost:8000/api/auth/portal/login \
   -H 'Content-Type: application/json' \
-  -d '{"cpf_cnpj":"123.456.789-00","password":"123456"}' | head -5
+  -d '{"cpf_cnpj":"123.456.789-00","password":"123456"}')
+echo $PORTAL_RESPONSE | head -5
 
 # Parar o servidor Laravel
 kill $LARAVEL_PID 2>/dev/null
 
 echo ""
 echo ""
-echo "✅ BACKEND CONFIGURADO COM SUCESSO!"
+echo "📝 7. Criando arquivo de configuração para o Frontend..."
+
+# Criar arquivo de config para o frontend
+cat > ../frontend_config.js << 'EOF'
+// Configuração da API para o Frontend React
+// Sistema Erlene Advogados - Integração Backend/Frontend
+
+export const API_CONFIG = {
+  BASE_URL: 'http://localhost:8000/api',
+  ENDPOINTS: {
+    // Autenticação
+    LOGIN_ADMIN: '/auth/login',
+    LOGIN_PORTAL: '/auth/portal/login',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+    
+    // Dashboard
+    DASHBOARD_STATS: '/dashboard/stats',
+    
+    // Testes
+    HEALTH: '/health',
+    TEST: '/test'
+  },
+  
+  // Headers padrão
+  HEADERS: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  
+  // Configurações JWT
+  TOKEN_KEY: 'erlene_token',
+  USER_KEY: 'erlene_user'
+};
+
+// Função para fazer requisições à API
+export const apiRequest = async (endpoint, options = {}) => {
+  const token = localStorage.getItem(API_CONFIG.TOKEN_KEY);
+  
+  const config = {
+    ...options,
+    headers: {
+      ...API_CONFIG.HEADERS,
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...(options.headers || {})
+    }
+  };
+  
+  const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, config);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+// CREDENCIAIS PARA TESTE
+export const TEST_CREDENTIALS = {
+  ADMIN: {
+    email: 'admin@erlene.com',
+    password: '123456',
+    name: 'Dra. Erlene Chaves Silva'
+  },
+  CLIENTE: {
+    cpf_cnpj: '123.456.789-00',
+    password: '123456',
+    name: 'Cliente Teste'
+  }
+};
+EOF
+
 echo ""
-echo "📊 DADOS CRIADOS NO BANCO:"
-echo "🏢 UNIDADES:"
-echo "   • Matriz - São Paulo"
-echo "   • Filial - Rio de Janeiro" 
 echo ""
-echo "👥 USUÁRIOS ADMIN:"
-echo "   • Admin Geral: admin@erlene.com / 123456"
-echo "   • Admin RJ: admin.rj@erlene.com / 123456"
-echo "   • Advogada: maria.advogada@erlene.com / 123456"
+echo "✅ INTEGRAÇÃO BACKEND + FRONTEND CONCLUÍDA!"
 echo ""
-echo "👤 CLIENTES PORTAL:"
-echo "   • Carlos: CPF 123.456.789-00 / 123456"
-echo "   • Ana: CPF 987.654.321-00 / 123456"
-echo "   • Tech Solutions: CNPJ 11.222.333/0001-44 / 123456"
+echo "🏗️ ESTRUTURA CRIADA:"
+echo "   📊 Backend Laravel - APIs funcionais"
+echo "   🔗 AuthController - Login admin e portal"
+echo "   🔐 JWT Auth - Tokens para autenticação"
+echo "   📝 CORS - Configurado para React localhost:3000"
+echo "   📋 Seeders - Dados compatíveis com frontend"
 echo ""
-echo "🔗 ENDPOINTS CRIADOS:"
-echo "   • POST /api/auth/admin/login - Login admin"
-echo "   • POST /api/auth/portal/login - Login cliente"
+echo "👥 USUÁRIOS CRIADOS (compatíveis com seu frontend):"
+echo ""
+echo "   🔧 ADMIN SISTEMA:"
+echo "   • Email: admin@erlene.com"
+echo "   • Senha: 123456"
+echo "   • Perfil: admin_geral"
+echo "   • Unidade: Matriz São Paulo"
+echo ""
+echo "   👤 CLIENTES PORTAL:"
+echo "   • CPF: 123.456.789-00 / Senha: 123456 (Cliente Teste)"
+echo "   • CPF: 987.654.321-00 / Senha: 123456 (Carlos Pereira)"
+echo "   • CNPJ: 11.222.333/0001-44 / Senha: 123456 (Tech Solutions)"
+echo ""
+echo "🔗 ENDPOINTS API CRIADOS:"
+echo "   • POST /api/auth/login - Login admin"
+echo "   • POST /api/auth/portal/login - Login portal cliente"  
 echo "   • GET /api/auth/me - Dados usuário logado"
 echo "   • POST /api/auth/logout - Logout"
 echo "   • GET /api/health - Status da API"
 echo ""
-echo "⏭️ PRÓXIMO: Execute 'continuar' para criar a integração do Frontend React"
+echo "📄 ARQUIVO CRIADO:"
+echo "   • ../frontend_config.js - Configuração para o React"
+echo ""
+echo "⚡ TESTE RÁPIDO:"
+echo "   1. php artisan serve (manter rodando)"
+echo "   2. cd ../frontend && npm start"
+echo "   3. Acesse http://localhost:3000/login"
+echo "   4. Use: admin@erlene.com / 123456 (admin)"
+echo "   5. Use: 123.456.789-00 / 123456 (cliente portal)"
+echo ""
+echo "⏭️ PRÓXIMO: Execute 'continuar' para criar Script 114b (Integração Frontend)!"

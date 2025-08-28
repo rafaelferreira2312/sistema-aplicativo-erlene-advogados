@@ -18,18 +18,11 @@ class ConfiguracoesSeeder extends Seeder
             // Email
             ['chave' => 'email.host', 'valor' => 'smtp.gmail.com', 'tipo' => 'string', 'categoria' => 'email'],
             ['chave' => 'email.porta', 'valor' => '587', 'tipo' => 'integer', 'categoria' => 'email'],
-            ['chave' => 'email.usuario', 'valor' => '', 'tipo' => 'string', 'categoria' => 'email'],
             
             // Integrações
             ['chave' => 'stripe.public_key', 'valor' => '', 'tipo' => 'string', 'categoria' => 'integracao'],
-            ['chave' => 'stripe.secret_key', 'valor' => '', 'tipo' => 'string', 'categoria' => 'integracao'],
             ['chave' => 'mercadopago.public_key', 'valor' => '', 'tipo' => 'string', 'categoria' => 'integracao'],
-            ['chave' => 'mercadopago.access_token', 'valor' => '', 'tipo' => 'string', 'categoria' => 'integracao'],
             ['chave' => 'chatgpt.api_key', 'valor' => '', 'tipo' => 'string', 'categoria' => 'integracao'],
-            
-            // Backup
-            ['chave' => 'backup.automatico', 'valor' => 'true', 'tipo' => 'boolean', 'categoria' => 'backup'],
-            ['chave' => 'backup.retencao_dias', 'valor' => '30', 'tipo' => 'integer', 'categoria' => 'backup'],
         ];
 
         foreach ($configuracoes as $config) {
@@ -38,7 +31,7 @@ class ConfiguracoesSeeder extends Seeder
                 'valor' => $config['valor'],
                 'tipo' => $config['tipo'],
                 'categoria' => $config['categoria'],
-                'unidade_id' => null, // global
+                'unidade_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
