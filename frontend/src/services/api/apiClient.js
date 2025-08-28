@@ -1,25 +1,24 @@
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { APP_CONFIG } from '../../config/constants';
-import { tokenService } from '../auth/tokenService';
+import { API_CONFIG, HTTP_STATUS } from '../../config/api';
 
-// Criar instância do axios
-export const apiClient = axios.create({
-  baseURL: APP_CONFIG.API_BASE_URL,
-  timeout: APP_CONFIG.REQUEST_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
+// Criar instância do Axios
+const apiClient = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+  headers: API_CONFIG.HEADERS
 });
 
-// Request interceptor - adicionar token automaticamente
+// Interceptor para adicionar token nas requisições
 apiClient.interceptors.request.use(
   (config) => {
-    const token = tokenService.getToken();
+    // Pegar token do localStorage
+    const token = localStorage.getItem('auth_token');
+    const portalToken = localStorage.getItem('portal_token');
     
-    if (token && !tokenService.isTokenExpired(token)) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else if (portalToken) {
+      config.headers.Authorization = `Bearer ${portalToken}`;
     }
     
     return config;
@@ -29,91 +28,47 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor - tratar erros e refresh token
+// Interceptor para tratar respostas e erros
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
-
-    // Token expirado - tentar refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    
+    // Token expirado
+    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
       originalRequest._retry = true;
-
+      
       try {
-        const refreshToken = tokenService.getRefreshToken();
-        
+        // Tentar renovar token
+        const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${APP_CONFIG.API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
             refresh_token: refreshToken
           });
-
-          const { token: newToken } = response.data;
           
-          tokenService.setToken(newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          const { access_token } = response.data;
+          localStorage.setItem('auth_token', access_token);
           
+          // Repetir requisição original
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh falhou - fazer logout
-        tokenService.clearAll();
+        // Refresh falhou, fazer logout
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('portal_token');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('portalAuth');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-
-    // Tratar outros erros
-    handleApiError(error);
     
     return Promise.reject(error);
   }
 );
-
-// Função para tratar erros da API
-const handleApiError = (error) => {
-  const { response } = error;
-  
-  if (!response) {
-    toast.error('Erro de conexão. Verifique sua internet.');
-    return;
-  }
-
-  const { status, data } = response;
-  
-  switch (status) {
-    case 400:
-      toast.error(data?.message || 'Dados inválidos');
-      break;
-    case 401:
-      toast.error('Acesso não autorizado');
-      break;
-    case 403:
-      toast.error('Você não tem permissão para esta ação');
-      break;
-    case 404:
-      toast.error('Recurso não encontrado');
-      break;
-    case 422:
-      // Erros de validação
-      if (data?.errors) {
-        Object.values(data.errors).flat().forEach(error => {
-          toast.error(error);
-        });
-      } else {
-        toast.error(data?.message || 'Erro de validação');
-      }
-      break;
-    case 429:
-      toast.error('Muitas tentativas. Tente novamente em alguns minutos.');
-      break;
-    case 500:
-      toast.error('Erro interno do servidor');
-      break;
-    default:
-      toast.error(data?.message || 'Erro inesperado');
-  }
-};
 
 export default apiClient;
