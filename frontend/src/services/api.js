@@ -48,6 +48,11 @@ class ApiService {
       }
 
       if (!response.ok) {
+        // Se token expirou, limpar autenticação
+        if (response.status === 401) {
+          this.clearAuth();
+          window.location.href = '/login';
+        }
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
@@ -70,6 +75,11 @@ class ApiService {
       if (response.success && response.access_token) {
         this.setToken(response.access_token);
         this.setUser(response.user);
+        
+        // Manter compatibilidade com sistema antigo
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userType', 'admin');
+        
         return { success: true, user: response.user };
       }
 
@@ -83,13 +93,13 @@ class ApiService {
     }
   }
 
-  async loginPortal(email, password) {
+  async loginPortal(cpf_cnpj, password) {
     try {
       const response = await this.request('/auth/portal/login', {
         method: 'POST',
         auth: false,
         body: JSON.stringify({ 
-          email: email,
+          cpf_cnpj: cpf_cnpj,
           password: password 
         })
       });
@@ -97,6 +107,11 @@ class ApiService {
       if (response.success && response.access_token) {
         this.setToken(response.access_token);
         this.setUser(response.user);
+        
+        // Manter compatibilidade com sistema antigo
+        localStorage.setItem('portalAuth', 'true');
+        localStorage.setItem('userType', 'cliente');
+        
         return { success: true, user: response.user };
       }
 
@@ -135,7 +150,7 @@ class ApiService {
   // Métodos de dashboard
   async getDashboardStats() {
     try {
-      const response = await this.request('/dashboard/stats');
+      const response = await this.request('/admin/dashboard');
       return response;
     } catch (error) {
       console.error('Dashboard Stats Error:', error);
@@ -143,13 +158,13 @@ class ApiService {
     }
   }
 
-  // Métodos de teste
-  async testConnection() {
+  async getDashboardNotifications() {
     try {
-      const response = await this.request('/dashboard/stats', { auth: false });
-      return { success: true, data: response };
+      const response = await this.request('/admin/dashboard/notifications');
+      return response;
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Dashboard Notifications Error:', error);
+      throw error;
     }
   }
 
@@ -161,6 +176,8 @@ class ApiService {
 
   setUser(user) {
     localStorage.setItem('erlene_user', JSON.stringify(user));
+    // Manter compatibilidade
+    localStorage.setItem('user', JSON.stringify(user));
   }
 
   getUser() {
@@ -185,6 +202,18 @@ class ApiService {
 
   isAuthenticated() {
     return !!this.getToken();
+  }
+
+  // Método para teste de conexão
+  async testConnection() {
+    try {
+      const response = await this.request('/admin/dashboard', { 
+        method: 'GET'
+      });
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 }
 
