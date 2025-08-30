@@ -98,10 +98,10 @@
     <div class="container">
         <div class="logo">E</div>
         <h1>Sistema Erlene Advogados</h1>
-        <p class="subtitle">API Backend Laravel</p>
+        <p class="subtitle">API - Backend</p>
         
         <div class="status">
-            🟢 API Operacional
+            🟢 Operacional
         </div>
         
         <div class="info">
@@ -114,12 +114,12 @@
                 <span class="value">{{ app()->environment() }}</span>
             </div>
             <div class="info-item">
-                <span class="label">Versão Laravel:</span>
+                <span class="label">Versão:</span>
                 <span class="value">{{ App::VERSION() }}</span>
             </div>
             <div class="info-item">
                 <span class="label">Banco de Dados:</span>
-                <span class="value">MySQL Conectado</span>
+                <span class="value">Conectado</span>
             </div>
             <div class="info-item">
                 <span class="label">Data/Hora:</span>

@@ -1,3 +1,27 @@
+#!/bin/bash
+
+# Script 114w - Backend Dashboard Completo com Dados Reais e Funcionalidades
+# Sistema Erlene Advogados - Backend Laravel
+# EXECUTE DENTRO DA PASTA: backend/
+# Comando: chmod +x 114w-backend-dashboard-complete.sh && ./114w-backend-dashboard-complete.sh
+
+echo "Script 114w - Backend Dashboard Completo com Dados Reais..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "artisan" ]; then
+    echo "Erro: Execute este script dentro da pasta backend/"
+    echo "Comando correto:"
+    echo "   cd backend"
+    echo "   chmod +x 114w-backend-dashboard-complete.sh && ./114w-backend-dashboard-complete.sh"
+    exit 1
+fi
+
+echo "1. Verificando estrutura Laravel..."
+
+echo "2. Atualizando DashboardController com dados reais e porcentagens funcionais..."
+
+# Atualizar DashboardController com cálculos reais
+cat > app/Http/Controllers/Api/Admin/DashboardController.php << 'EOF'
 <?php
 
 namespace App\Http\Controllers\Api\Admin;
@@ -375,3 +399,39 @@ class DashboardController extends Controller
         }
     }
 }
+EOF
+
+echo "3. Verificando se as rotas estão configuradas..."
+
+# Verificar e adicionar rotas se necessário
+if ! grep -q "DashboardController" routes/api.php; then
+    echo "Adicionando rotas do dashboard..."
+    cat >> routes/api.php << 'EOF'
+
+// Dashboard Admin com dados reais
+Route::middleware('auth:api')->prefix('admin')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
+    Route::get('/dashboard/notifications', [App\Http\Controllers\Api\Admin\DashboardController::class, 'notifications']);
+});
+EOF
+fi
+
+echo ""
+echo "SCRIPT 114w CONCLUÍDO!"
+echo ""
+echo "FUNCIONALIDADES IMPLEMENTADAS:"
+echo "   ✓ Contagem real de usuários da tabela 'users'"
+echo "   ✓ Cálculo real de porcentagens com comparação mensal"
+echo "   ✓ Dados financeiros reais com formatação brasileira"
+echo "   ✓ URLs funcionais para navegação (acoes_rapidas)"
+echo "   ✓ Gráficos com dados dos últimos 30 dias/12 meses"
+echo "   ✓ Listas funcionais de atendimentos e processos urgentes"
+echo ""
+echo "PRÓXIMO PASSO:"
+echo "   Execute o frontend e teste o dashboard"
+echo "   Agora deve mostrar:"
+echo "   • Números reais do banco de dados"
+echo "   • Porcentagens funcionais (verde/vermelho)"
+echo "   • Valores formatados em R$"
+echo ""
+echo "Digite 'continuar' para o próximo script (114x - Frontend Dashboard Links)"

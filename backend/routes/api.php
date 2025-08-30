@@ -21,3 +21,9 @@ Route::middleware('auth:api')->group(function () {
         ]);
     });
 });
+
+// Rotas do Dashboard Admin
+Route::middleware('auth:api')->prefix('admin')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
+    Route::get('/dashboard/notifications', [App\Http\Controllers\Api\Admin\DashboardController::class, 'notifications']);
+});
