@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -11,38 +11,60 @@ import {
   EyeSlashIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { clientsService } from '../../services/api/clientsService';
+import { formatDocument, formatPhone, formatCEP } from '../../utils/formatters';
+import { clientValidators } from '../../utils/validators';
+import toast from 'react-hot-toast';
 
 const NewClient = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [responsaveis, setResponsaveis] = useState([]);
   
   const [formData, setFormData] = useState({
-    // Dados básicos
-    type: 'PF',
-    name: '',
-    document: '',
+    tipo_pessoa: 'PF',
+    nome: '',
+    cpf_cnpj: '',
     email: '',
-    phone: '',
-    
-    // Endereço
+    telefone: '',
     cep: '',
-    street: '',
-    number: '',
-    complement: '',
-    neighborhood: '',
-    city: '',
-    state: 'SP',
-    
-    // Configurações
-    status: 'Ativo',
-    portalAccess: false,
-    password: '',
-    storageType: 'local',
-    observations: ''
+    endereco: '',
+    cidade: '',
+    estado: 'SP',
+    observacoes: '',
+    status: 'ativo',
+    acesso_portal: false,
+    senha_portal: '',
+    tipo_armazenamento: 'local',
+    responsavel_id: ''
   });
 
   const [errors, setErrors] = useState({});
+
+  // Carregar responsáveis
+  useEffect(() => {
+    const loadResponsaveis = async () => {
+      try {
+        const response = await clientsService.getResponsaveis();
+        setResponsaveis(response.data || []);
+        
+        // Selecionar primeiro responsável por padrão
+        if (response.data && response.data.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            responsavel_id: response.data[0].id
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar responsáveis:', error);
+        toast.error('Erro ao carregar responsáveis');
+      }
+    };
+
+    loadResponsaveis();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,44 +82,29 @@ const NewClient = () => {
     }
   };
 
-  const formatDocument = (value, type) => {
-    const numbers = value.replace(/\D/g, '');
-    
-    if (type === 'PF') {
-      // CPF: 000.000.000-00
-      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    } else {
-      // CNPJ: 00.000.000/0000-00
-      return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-    }
-  };
-
-  const formatPhone = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    // (00) 00000-0000
-    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  };
-
-  const formatCEP = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    // 00000-000
-    return numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
-  };
-
   const handleDocumentChange = (e) => {
-    const formatted = formatDocument(e.target.value, formData.type);
+    const formatted = formatDocument(e.target.value, formData.tipo_pessoa);
     setFormData(prev => ({
       ...prev,
-      document: formatted
+      cpf_cnpj: formatted
     }));
+    
+    // Limpar erro
+    if (errors.cpf_cnpj) {
+      setErrors(prev => ({ ...prev, cpf_cnpj: '' }));
+    }
   };
 
   const handlePhoneChange = (e) => {
     const formatted = formatPhone(e.target.value);
     setFormData(prev => ({
       ...prev,
-      phone: formatted
+      telefone: formatted
     }));
+    
+    if (errors.telefone) {
+      setErrors(prev => ({ ...prev, telefone: '' }));
+    }
   };
 
   const handleCEPChange = async (e) => {
@@ -107,65 +114,63 @@ const NewClient = () => {
       cep: formatted
     }));
     
-    // Buscar endereço por CEP
+    // Buscar endereço por CEP via backend
     if (formatted.length === 9) {
+      setLoadingCep(true);
       try {
-        const response = await fetch(`https://viacep.com.br/ws/${formatted.replace('-', '')}/json/`);
-        const data = await response.json();
+        const response = await clientsService.buscarCep(formatted);
+        const endereco = response.data;
         
-        if (!data.erro) {
-          setFormData(prev => ({
-            ...prev,
-            street: data.logradouro,
-            neighborhood: data.bairro,
-            city: data.localidade,
-            state: data.uf
-          }));
-        }
+        setFormData(prev => ({
+          ...prev,
+          endereco: endereco.logradouro,
+          cidade: endereco.localidade,
+          estado: endereco.uf
+        }));
+        
+        toast.success('Endereço encontrado!');
       } catch (error) {
-        console.log('Erro ao buscar CEP:', error);
+        toast.error('CEP não encontrado');
+      } finally {
+        setLoadingCep(false);
       }
     }
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.name.trim()) newErrors.name = 'Nome é obrigatório';
-    if (!formData.document.trim()) newErrors.document = 'Documento é obrigatório';
-    if (!formData.email.trim()) newErrors.email = 'Email é obrigatório';
-    if (!formData.phone.trim()) newErrors.phone = 'Telefone é obrigatório';
-    
-    // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-    
-    if (formData.portalAccess && !formData.password) {
-      newErrors.password = 'Senha é obrigatória para acesso ao portal';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = clientValidators.validateClientForm(formData, false);
+    setErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error('Por favor, corrija os erros no formulário');
+      return;
+    }
     
     setLoading(true);
     
     try {
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await clientsService.createClient(formData);
       
-      // Simular sucesso
-      alert('Cliente cadastrado com sucesso!');
+      // Mostrar senha temporária se gerada
+      if (response.data.senha_temporaria) {
+        toast.success(`Cliente criado! Senha temporária: ${response.data.senha_temporaria}`, {
+          duration: 10000,
+        });
+      }
+      
       navigate('/admin/clientes');
     } catch (error) {
-      alert('Erro ao cadastrar cliente');
+      if (error.response && error.response.data && error.response.data.errors) {
+        setErrors(error.response.data.errors);
+        toast.error('Dados inválidos. Verifique os campos destacados.');
+      } else {
+        toast.error('Erro ao cadastrar cliente');
+      }
     } finally {
       setLoading(false);
     }
@@ -197,13 +202,13 @@ const NewClient = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Tipo de Pessoa</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className={`flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all ${
-              formData.type === 'PF' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+              formData.tipo_pessoa === 'PF' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
             }`}>
               <input
                 type="radio"
-                name="type"
+                name="tipo_pessoa"
                 value="PF"
-                checked={formData.type === 'PF'}
+                checked={formData.tipo_pessoa === 'PF'}
                 onChange={handleChange}
                 className="sr-only"
               />
@@ -215,13 +220,13 @@ const NewClient = () => {
             </label>
             
             <label className={`flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all ${
-              formData.type === 'PJ' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+              formData.tipo_pessoa === 'PJ' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
             }`}>
               <input
                 type="radio"
-                name="type"
+                name="tipo_pessoa"
                 value="PJ"
-                checked={formData.type === 'PJ'}
+                checked={formData.tipo_pessoa === 'PJ'}
                 onChange={handleChange}
                 className="sr-only"
               />
@@ -240,37 +245,37 @@ const NewClient = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'PF' ? 'Nome Completo' : 'Razão Social'} *
+                {formData.tipo_pessoa === 'PF' ? 'Nome Completo' : 'Razão Social'} *
               </label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="nome"
+                value={formData.nome}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.name ? 'border-red-300' : 'border-gray-300'
+                  errors.nome ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder={formData.type === 'PF' ? 'João Silva Santos' : 'Empresa ABC Ltda'}
+                placeholder={formData.tipo_pessoa === 'PF' ? 'João Silva Santos' : 'Empresa ABC Ltda'}
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              {errors.nome && <p className="text-red-500 text-sm mt-1">{errors.nome}</p>}
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'PF' ? 'CPF' : 'CNPJ'} *
+                {formData.tipo_pessoa === 'PF' ? 'CPF' : 'CNPJ'} *
               </label>
               <input
                 type="text"
-                name="document"
-                value={formData.document}
+                name="cpf_cnpj"
+                value={formData.cpf_cnpj}
                 onChange={handleDocumentChange}
-                maxLength={formData.type === 'PF' ? 14 : 18}
+                maxLength={formData.tipo_pessoa === 'PF' ? 14 : 18}
                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.document ? 'border-red-300' : 'border-gray-300'
+                  errors.cpf_cnpj ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder={formData.type === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'}
+                placeholder={formData.tipo_pessoa === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'}
               />
-              {errors.document && <p className="text-red-500 text-sm mt-1">{errors.document}</p>}
+              {errors.cpf_cnpj && <p className="text-red-500 text-sm mt-1">{errors.cpf_cnpj}</p>}
             </div>
             
             <div>
@@ -297,17 +302,37 @@ const NewClient = () => {
                 <PhoneIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  name="phone"
-                  value={formData.phone}
+                  name="telefone"
+                  value={formData.telefone}
                   onChange={handlePhoneChange}
                   maxLength={15}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
+                    errors.telefone ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="(11) 99999-9999"
                 />
               </div>
-              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              {errors.telefone && <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Responsável *</label>
+              <select
+                name="responsavel_id"
+                value={formData.responsavel_id}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  errors.responsavel_id ? 'border-red-300' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Selecione um responsável</option>
+                {responsaveis.map(resp => (
+                  <option key={resp.id} value={resp.id}>
+                    {resp.name} {resp.oab ? `- OAB: ${resp.oab}` : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.responsavel_id && <p className="text-red-500 text-sm mt-1">{errors.responsavel_id}</p>}
             </div>
           </div>
         </div>
@@ -326,18 +351,27 @@ const NewClient = () => {
                   value={formData.cep}
                   onChange={handleCEPChange}
                   maxLength={9}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    loadingCep ? 'bg-gray-50' : ''
+                  } ${errors.cep ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="00000-000"
+                  disabled={loadingCep}
                 />
+                {loadingCep && (
+                  <div className="absolute right-3 top-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+                  </div>
+                )}
               </div>
+              {errors.cep && <p className="text-red-500 text-sm mt-1">{errors.cep}</p>}
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Logradouro</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
               <input
                 type="text"
-                name="street"
-                value={formData.street}
+                name="endereco"
+                value={formData.endereco}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Rua, Avenida, etc."
@@ -345,47 +379,11 @@ const NewClient = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Número</label>
-              <input
-                type="text"
-                name="number"
-                value={formData.number}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="123"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Complemento</label>
-              <input
-                type="text"
-                name="complement"
-                value={formData.complement}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Apto, Sala, etc."
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bairro</label>
-              <input
-                type="text"
-                name="neighborhood"
-                value={formData.neighborhood}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Centro"
-              />
-            </div>
-            
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Cidade</label>
               <input
                 type="text"
-                name="city"
-                value={formData.city}
+                name="cidade"
+                value={formData.cidade}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="São Paulo"
@@ -395,8 +393,8 @@ const NewClient = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
               <select
-                name="state"
-                value={formData.state}
+                name="estado"
+                value={formData.estado}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
@@ -426,21 +424,21 @@ const NewClient = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
               </select>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Armazenamento</label>
               <select
-                name="storageType"
-                value={formData.storageType}
+                name="tipo_armazenamento"
+                value={formData.tipo_armazenamento}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="local">Local</option>
-                <option value="googledrive">Google Drive</option>
+                <option value="google_drive">Google Drive</option>
                 <option value="onedrive">OneDrive</option>
               </select>
             </div>
@@ -451,8 +449,8 @@ const NewClient = () => {
             <label className="flex items-center">
               <input
                 type="checkbox"
-                name="portalAccess"
-                checked={formData.portalAccess}
+                name="acesso_portal"
+                checked={formData.acesso_portal}
                 onChange={handleChange}
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
@@ -463,17 +461,17 @@ const NewClient = () => {
           </div>
           
           {/* Senha do Portal */}
-          {formData.portalAccess && (
+          {formData.acesso_portal && (
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Senha do Portal *</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
+                  name="senha_portal"
+                  value={formData.senha_portal}
                   onChange={handleChange}
                   className={`w-full px-4 py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                    errors.senha_portal ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Senha para acesso"
                 />
@@ -489,7 +487,7 @@ const NewClient = () => {
                   )}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              {errors.senha_portal && <p className="text-red-500 text-sm mt-1">{errors.senha_portal}</p>}
             </div>
           )}
           
@@ -499,8 +497,8 @@ const NewClient = () => {
             <div className="relative">
               <DocumentTextIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <textarea
-                name="observations"
-                value={formData.observations}
+                name="observacoes"
+                value={formData.observacoes}
                 onChange={handleChange}
                 rows={4}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"

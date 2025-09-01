@@ -1,7 +1,7 @@
 {
   "name": "sistema-erlene-advogados-frontend",
   "version": "1.0.0",
-  "description": "Sistema de Gestão Jurídica - Erlene Advogados - Frontend React",
+  "description": "Sistema de Gest\u00e3o Jur\u00eddica - Erlene Advogados - Frontend React",
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.13",
@@ -40,7 +40,7 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.7.0",
-    "eslint-plugin-prettier": "^4.2.1",    
+    "eslint-plugin-prettier": "^4.2.1",
     "lint-staged": "^13.2.0",
     "postcss": "^8.5.6",
     "prettier": "^2.8.4",
@@ -89,6 +89,5 @@
     "src/**/*.{json,css,md}": [
       "prettier --write"
     ]
-  },
-  "proxy": "https://localhost:8443"
+  }
 }

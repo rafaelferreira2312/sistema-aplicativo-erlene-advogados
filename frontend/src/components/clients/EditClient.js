@@ -21,6 +21,7 @@ const EditClient = () => {
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [responsaveis, setResponsaveis] = useState([]);
   
   const [formData, setFormData] = useState({
     type: 'PF',
@@ -123,6 +124,21 @@ const EditClient = () => {
 
     loadClient();
   }, [id]);
+
+  // Carregar responsáveis
+  useEffect(() => {
+    const loadResponsaveis = async () => {
+      try {
+        const response = await clientsService.getResponsaveis();
+        setResponsaveis(response.data || []);
+      } catch (error) {
+        console.error('Erro ao carregar responsáveis:', error);
+      }
+    };
+    
+    loadResponsaveis();
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -434,6 +450,24 @@ const EditClient = () => {
                 </div>
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
+            </div>
+
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Responsável *</label>
+              <select
+                name="responsavel_id"
+                value={formData.responsavel_id || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Selecione um responsável</option>
+                {responsaveis.map(resp => (
+                  <option key={resp.id} value={resp.id}>
+                    {resp.name} {resp.oab ? `- OAB: ${resp.oab}` : ''}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

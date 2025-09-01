@@ -39,37 +39,41 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota SIMPLES
+// Componente de proteção de rota CORRIGIDO
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  // Verificar múltiplas formas de autenticação para compatibilidade
+  const token = localStorage.getItem('authToken') || localStorage.getItem('erlene_token') || localStorage.getItem('token');
+  const isAuthFlag = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
-  const userType = localStorage.getItem('userType');
+  
+  const isAuthenticated = !!(token || isAuthFlag);
+  
+  // Determinar tipo de usuário
+  const userType = localStorage.getItem('userType') || (portalAuth ? 'cliente' : 'admin');
 
-  // Se requer autenticação
-  if (requiredAuth) {
-    // Para sistema administrativo
-    if (allowedTypes.includes('admin') && !isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    
-    // Para portal do cliente
-    if (allowedTypes.includes('cliente') && !portalAuth) {
+  // Se requer autenticação e não está autenticado
+  if (requiredAuth && !isAuthenticated) {
+    // Redirecionar para o login correto baseado no tipo esperado
+    if (allowedTypes.includes('cliente')) {
       return <Navigate to="/portal/login" replace />;
     }
+    return <Navigate to="/login" replace />;
   }
 
-  // Se não requer autenticação e está logado, redirecionar
-  if (!requiredAuth && (isAuthenticated || portalAuth)) {
+  // Se não requer autenticação mas está autenticado, redirecionar para dashboard
+  if (!requiredAuth && isAuthenticated) {
     if (userType === 'cliente') {
       return <Navigate to="/portal/dashboard" replace />;
-    } else {
-      return <Navigate to="/admin" replace />;
     }
+    return <Navigate to="/admin" replace />;
   }
 
   // Verificar tipo de usuário permitido
   if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
-    return <Navigate to="/unauthorized" replace />;
+    if (userType === 'cliente') {
+      return <Navigate to="/portal/dashboard" replace />;
+    }
+    return <Navigate to="/admin" replace />;
   }
 
   return children;
