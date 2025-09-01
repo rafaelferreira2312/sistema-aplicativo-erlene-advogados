@@ -6,6 +6,7 @@ import {
   UserIcon,
   LockClosedIcon 
 } from '@heroicons/react/24/outline';
+import { authService } from '../../../services/auth/authService';
 import apiService from '../../../services/api';
 
 const Login = () => {

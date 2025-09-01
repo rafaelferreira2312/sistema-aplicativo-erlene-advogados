@@ -1,3 +1,38 @@
+#!/bin/bash
+
+# Script 115q - Restaurar Dashboard Funcionando
+# Sistema de Gestão Jurídica - Erlene Advogados
+# Execução: chmod +x 115q-restore-dashboard-working.sh && ./115q-restore-dashboard-working.sh
+# EXECUTE NA PASTA: frontend/
+
+echo "🔧 Restaurando Dashboard funcionando..."
+
+# Verificar se estamos na pasta frontend
+if [ ! -f "package.json" ]; then
+    echo "❌ Execute este script na pasta frontend/"
+    exit 1
+fi
+
+echo "1. Verificando estrutura atual do Dashboard..."
+
+# Verificar onde está o Dashboard
+DASHBOARD_PATH=""
+if [ -f "src/pages/admin/Dashboard/index.js" ]; then
+    DASHBOARD_PATH="src/pages/admin/Dashboard/index.js"
+    echo "✅ Dashboard encontrado em: $DASHBOARD_PATH"
+elif [ -f "src/pages/admin/Dashboard.js" ]; then
+    DASHBOARD_PATH="src/pages/admin/Dashboard.js"
+    echo "✅ Dashboard encontrado em: $DASHBOARD_PATH"
+else
+    echo "⚠️  Dashboard não encontrado, criando estrutura..."
+    mkdir -p src/pages/admin/Dashboard
+    DASHBOARD_PATH="src/pages/admin/Dashboard/index.js"
+fi
+
+echo "2. Criando Dashboard funcionando baseado nos scripts 114w/114x..."
+
+# Restaurar Dashboard funcionando (baseado no script 114x que funcionava)
+cat > "$DASHBOARD_PATH" << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -445,3 +480,79 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+EOF
+
+echo "3. Verificando se o App.js está importando corretamente..."
+
+# Verificar se o App.js tem o import correto
+if [ -f "src/App.js" ]; then
+    if ! grep -q "Dashboard.*from.*pages/admin/Dashboard" src/App.js; then
+        echo "⚠️  Corrigindo import do Dashboard no App.js..."
+        
+        # Adicionar import se não existir
+        if ! grep -q "import Dashboard" src/App.js; then
+            sed -i '/import AdminLayout/a import Dashboard from "./pages/admin/Dashboard";' src/App.js
+        fi
+    fi
+    
+    echo "✅ App.js verificado"
+fi
+
+echo "4. Verificando se todas as dependências estão instaladas..."
+
+# Verificar dependências essenciais
+MISSING_DEPS=""
+
+if ! grep -q '"react-router-dom"' package.json; then
+    MISSING_DEPS="$MISSING_DEPS react-router-dom"
+fi
+
+if ! grep -q '"@heroicons/react"' package.json; then
+    MISSING_DEPS="$MISSING_DEPS @heroicons/react"
+fi
+
+if [ ! -z "$MISSING_DEPS" ]; then
+    echo "⚠️  Instalando dependências faltantes: $MISSING_DEPS"
+    npm install $MISSING_DEPS
+fi
+
+echo "5. Testando se o backend está respondendo..."
+
+# Testar conexão com backend
+if curl -s http://localhost:8000/api/health > /dev/null 2>&1; then
+    echo "✅ Backend respondendo na porta 8000"
+elif curl -s http://localhost:8001/api/health > /dev/null 2>&1; then
+    echo "✅ Backend respondendo na porta 8001"
+    echo "⚠️  Atualizando URL no Dashboard para porta 8001..."
+    sed -i 's|http://localhost:8000|http://localhost:8001|g' "$DASHBOARD_PATH"
+else
+    echo "⚠️  Backend não está respondendo!"
+    echo ""
+    echo "INICIE O BACKEND:"
+    echo "   cd ../backend"
+    echo "   php artisan serve"
+    echo ""
+fi
+
+echo ""
+echo "🎉 DASHBOARD RESTAURADO!"
+echo ""
+echo "FUNCIONALIDADES RESTAURADAS:"
+echo "✅ Dashboard com dados reais da API"
+echo "✅ Cards clicáveis que navegam para páginas"
+echo "✅ Ações rápidas funcionais"
+echo "✅ Botões + e ícones funcionais"
+echo "✅ Loading states e tratamento de erro"
+echo "✅ Porcentagens vindas do backend"
+echo "✅ Fallback para dados vazios se API falhar"
+echo ""
+echo "🔄 PRÓXIMOS PASSOS:"
+echo "1. Recarregue o frontend (Ctrl+C e npm start)"
+echo "2. Verifique se não há erros no console"
+echo "3. Teste se o dashboard aparece"
+echo "4. Teste se os botões navegam corretamente"
+echo ""
+echo "Se ainda houver problemas:"
+echo "- Verifique o console do navegador (F12)"
+echo "- Certifique-se que o backend está rodando"
+echo "- Verifique se o login está funcionando"

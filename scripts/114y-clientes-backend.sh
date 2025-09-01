@@ -1,3 +1,28 @@
+#!/bin/bash
+
+# Script 114y - Backend Clientes Controller (Parte 1)
+# Sistema de Gestão Jurídica - Erlene Advogados
+# Execução: chmod +x 114y-clientes-backend.sh && ./114y-clientes-backend.sh
+# EXECUTE NA PASTA: backend/
+
+echo "🚀 Criando Backend API para Clientes - Parte 1..."
+
+# Verificar se estamos na pasta backend
+if [ ! -f "artisan" ]; then
+    echo "❌ Execute este script na pasta backend/"
+    exit 1
+fi
+
+echo "📝 1. Criando diretórios necessários..."
+
+# Criar diretórios
+mkdir -p app/Http/Controllers/Api/Admin/Clients
+mkdir -p app/Services
+
+echo "📝 2. Criando Controller de Clientes..."
+
+# Criar Controller de Clientes
+cat > app/Http/Controllers/Api/Admin/Clients/ClientController.php << 'EOF'
 <?php
 
 namespace App\Http\Controllers\Api\Admin\Clients;
@@ -263,3 +288,9 @@ class ClientController extends Controller
         return $this->success($responsaveis);
     }
 }
+EOF
+
+echo "✅ Script 114y Parte 1 concluído!"
+echo "📝 Controller ClientController criado com sucesso"
+echo ""
+echo "Digite 'continuar' para prosseguir com a Parte 2 (ViaCEP Service)..."

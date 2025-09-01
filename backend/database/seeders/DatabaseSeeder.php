@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
+        $this->call(ClienteSeeder::class);
     {
         $this->call([
             UsuariosCompleteSeeder::class,

@@ -1,24 +1,32 @@
 import axios from 'axios';
-import { API_CONFIG, HTTP_STATUS } from '../../config/api';
 
-// Criar instância do Axios
-const apiClient = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-  headers: API_CONFIG.HEADERS
+// Configuração base da API
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+// Criar instância do axios
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
-// Interceptor para adicionar token nas requisições
+// Função para obter token (compatibilidade múltipla)
+const getAuthToken = () => {
+  return localStorage.getItem('authToken') || 
+         localStorage.getItem('erlene_token') || 
+         localStorage.getItem('token');
+};
+
+// Request interceptor - adicionar token automaticamente
 apiClient.interceptors.request.use(
   (config) => {
-    // Pegar token do localStorage
-    const token = localStorage.getItem('auth_token');
-    const portalToken = localStorage.getItem('portal_token');
+    const token = getAuthToken();
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    } else if (portalToken) {
-      config.headers.Authorization = `Bearer ${portalToken}`;
     }
     
     return config;
@@ -28,42 +36,28 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para tratar respostas e erros
+// Response interceptor - tratar erros
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
+    const { response } = error;
     
     // Token expirado
-    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (response?.status === 401) {
+      console.warn('Token expirado, redirecionando para login...');
       
-      try {
-        // Tentar renovar token
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (refreshToken) {
-          const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
-            refresh_token: refreshToken
-          });
-          
-          const { access_token } = response.data;
-          localStorage.setItem('auth_token', access_token);
-          
-          // Repetir requisição original
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh falhou, fazer logout
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('portal_token');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('portalAuth');
+      // Limpar autenticação
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('erlene_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('portalAuth');
+      
+      // Redirecionar para login se não estiver na página de login
+      if (window.location.pathname !== '/login') {
         window.location.href = '/login';
-        return Promise.reject(refreshError);
       }
     }
     

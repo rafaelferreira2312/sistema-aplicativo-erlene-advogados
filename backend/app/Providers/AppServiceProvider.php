@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Registrar ViaCepService
+        $this->app->singleton(\App\Services\ViaCepService::class);
     }
 
     /**

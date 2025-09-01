@@ -1,14 +1,23 @@
-import { apiClient } from '../apiClient';
+import apiClient from './apiClient';
 
 export const clientsService = {
-  // Listar clientes com filtros
+  // Listar clientes com filtros e paginação
   async getClients(params = {}) {
     try {
       const response = await apiClient.get('/admin/clients', { params });
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        pagination: response.data.pagination || null,
+        total: response.data.total || 0
+      };
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar clientes',
+        data: []
+      };
     }
   },
 
@@ -16,67 +25,107 @@ export const clientsService = {
   async getStats() {
     try {
       const response = await apiClient.get('/admin/clients/stats');
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar estatísticas',
+        data: { total: 0, ativos: 0, pf: 0, pj: 0 }
+      };
     }
   },
 
-  // Obter cliente por ID
+  // Buscar cliente por ID
   async getClient(id) {
     try {
       const response = await apiClient.get(`/admin/clients/${id}`);
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
     } catch (error) {
       console.error('Erro ao buscar cliente:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar cliente'
+      };
     }
   },
 
-  // Criar cliente
+  // Criar novo cliente
   async createClient(clientData) {
     try {
       const response = await apiClient.post('/admin/clients', clientData);
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cliente criado com sucesso'
+      };
     } catch (error) {
       console.error('Erro ao criar cliente:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao criar cliente',
+        errors: error.response?.data?.errors || {}
+      };
     }
   },
 
-  // Atualizar cliente
+  // Atualizar cliente existente
   async updateClient(id, clientData) {
     try {
       const response = await apiClient.put(`/admin/clients/${id}`, clientData);
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cliente atualizado com sucesso'
+      };
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao atualizar cliente',
+        errors: error.response?.data?.errors || {}
+      };
     }
   },
 
-  // Deletar cliente
+  // Excluir cliente
   async deleteClient(id) {
     try {
       const response = await apiClient.delete(`/admin/clients/${id}`);
-      return response.data;
+      return {
+        success: true,
+        message: response.data.message || 'Cliente excluído com sucesso'
+      };
     } catch (error) {
-      console.error('Erro ao deletar cliente:', error);
-      throw error;
+      console.error('Erro ao excluir cliente:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir cliente'
+      };
     }
   },
 
-  // Buscar CEP via backend
+  // Buscar CEP via backend (ViaCEP integrado)
   async buscarCep(cep) {
     try {
-      // Limpar CEP antes de enviar
       const cepLimpo = cep.replace(/\D/g, '');
       const response = await apiClient.get(`/admin/clients/buscar-cep/${cepLimpo}`);
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'CEP não encontrado'
+      };
     }
   },
 
@@ -84,10 +133,17 @@ export const clientsService = {
   async getResponsaveis() {
     try {
       const response = await apiClient.get('/admin/clients/responsaveis');
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data || []
+      };
     } catch (error) {
       console.error('Erro ao buscar responsáveis:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar responsáveis',
+        data: []
+      };
     }
   },
 
@@ -96,49 +152,41 @@ export const clientsService = {
     try {
       const params = { search: query, ...filters };
       const response = await apiClient.get('/admin/clients', { params });
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro na busca',
+        data: []
+      };
     }
   },
 
-  // Exportar clientes
-  async exportClients(format = 'excel', filters = {}) {
-    try {
-      const response = await apiClient.get('/admin/clients/export', {
-        params: { format, ...filters },
-        responseType: 'blob'
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao exportar clientes:', error);
-      throw error;
-    }
-  },
-
-  // Gerenciar acesso ao portal
-  async updatePortalAccess(id, accessData) {
-    try {
-      const response = await apiClient.put(`/admin/clients/${id}/portal-access`, accessData);
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao atualizar acesso portal:', error);
-      throw error;
-    }
-  },
-
-  // Validar CPF/CNPJ
+  // Validar CPF/CNPJ único
   async validateDocument(document, type, excludeId = null) {
     try {
       const params = { document, type };
       if (excludeId) params.exclude_id = excludeId;
       
       const response = await apiClient.get('/admin/clients/validate-document', { params });
-      return response.data;
+      return {
+        success: true,
+        valid: response.data.valid || false
+      };
     } catch (error) {
       console.error('Erro ao validar documento:', error);
-      throw error;
+      return {
+        success: false,
+        valid: false,
+        error: error.response?.data?.message || 'Erro na validação'
+      };
     }
   }
 };
+
+// Export default também para compatibilidade
+export default clientsService;

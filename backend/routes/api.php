@@ -27,3 +27,17 @@ Route::middleware('auth:api')->prefix('admin')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
     Route::get('/dashboard/notifications', [App\Http\Controllers\Api\Admin\DashboardController::class, 'notifications']);
 });
+
+// Rotas de Clientes
+Route::middleware('auth:api')->prefix('admin')->group(function () {
+    Route::prefix('clients')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'store']);
+        Route::get('/stats', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'stats']);
+        Route::get('/responsaveis', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'responsaveis']);
+        Route::get('/buscar-cep/{cep}', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'buscarCep']);
+        Route::get('/{id}', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'show']);
+        Route::put('/{id}', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'update']);
+        Route::delete('/{id}', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'destroy']);
+    });
+});

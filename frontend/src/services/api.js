@@ -1,219 +1,110 @@
-// API Service - Sistema Erlene Advogados
-// Serviço para comunicação com o backend Laravel
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// API Service principal - compatibilidade com código existente
+import { authService } from './auth/authService';
+import { clientsService } from './api/clientsService';
+import { dashboardService } from './api/dashboardService';
+import apiClient from './api/apiClient';
 
 class ApiService {
   constructor() {
-    this.baseURL = API_BASE_URL;
-    this.token = localStorage.getItem('erlene_token');
-  }
-
-  // Headers padrão para requisições
-  getHeaders(includeAuth = true) {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    if (includeAuth && this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    return headers;
-  }
-
-  // Método genérico para fazer requisições
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      ...options,
-      headers: {
-        ...this.getHeaders(options.auth !== false),
-        ...(options.headers || {})
-      }
-    };
-
-    try {
-      const response = await fetch(url, config);
-      
-      // Se resposta não é JSON, retornar texto
-      const contentType = response.headers.get('content-type');
-      let data;
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = { message: await response.text() };
-      }
-
-      if (!response.ok) {
-        // Se token expirou, limpar autenticação
-        if (response.status === 401) {
-          this.clearAuth();
-          window.location.href = '/login';
-        }
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('API Request Error:', error);
-      throw error;
-    }
+    this.client = apiClient;
   }
 
   // Métodos de autenticação
   async loginAdmin(email, password) {
     try {
-      const response = await this.request('/auth/login', {
-        method: 'POST',
-        auth: false,
-        body: JSON.stringify({ email, password })
-      });
-
-      if (response.success && response.access_token) {
-        this.setToken(response.access_token);
-        this.setUser(response.user);
-        
-        // Manter compatibilidade com sistema antigo
+      const result = await authService.login(email, password);
+      
+      if (result.success && result.token) {
+        // Salvar token e usuário
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('erlene_token', result.token);
+        localStorage.setItem('token', result.token);
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userType', 'admin');
+        localStorage.setItem('user', JSON.stringify(result.user));
         
-        return { success: true, user: response.user };
+        return { 
+          success: true, 
+          user: result.user,
+          access_token: result.token 
+        };
       }
-
-      return response;
+      
+      return result;
     } catch (error) {
-      console.error('Login Admin Error:', error);
       return { 
         success: false, 
-        message: error.message || 'Erro ao fazer login. Verifique suas credenciais.' 
+        message: error.message || 'Erro ao fazer login' 
       };
     }
   }
 
   async loginPortal(cpf_cnpj, password) {
     try {
-      const response = await this.request('/auth/portal/login', {
-        method: 'POST',
-        auth: false,
-        body: JSON.stringify({ 
-          cpf_cnpj: cpf_cnpj,
-          password: password 
-        })
-      });
-
-      if (response.success && response.access_token) {
-        this.setToken(response.access_token);
-        this.setUser(response.user);
-        
-        // Manter compatibilidade com sistema antigo
+      const result = await authService.portalLogin(cpf_cnpj, password);
+      
+      if (result.success && result.token) {
+        // Salvar token e usuário do portal
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('erlene_token', result.token);
+        localStorage.setItem('token', result.token);
         localStorage.setItem('portalAuth', 'true');
         localStorage.setItem('userType', 'cliente');
+        localStorage.setItem('user', JSON.stringify(result.user));
         
-        return { success: true, user: response.user };
+        return { 
+          success: true, 
+          user: result.user,
+          access_token: result.token 
+        };
       }
-
-      return response;
+      
+      return result;
     } catch (error) {
-      console.error('Login Portal Error:', error);
       return { 
         success: false, 
-        message: error.message || 'Erro ao fazer login no portal. Verifique suas credenciais.' 
+        message: error.message || 'Erro ao fazer login no portal' 
       };
     }
   }
 
   async logout() {
     try {
-      await this.request('/auth/logout', {
-        method: 'POST'
-      });
+      await authService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Erro no logout:', error);
     } finally {
-      this.clearAuth();
+      // Limpar todos os dados de autenticação
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('erlene_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('portalAuth');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('user');
     }
   }
 
-  async getMe() {
-    try {
-      const response = await this.request('/auth/me');
-      return response;
-    } catch (error) {
-      console.error('Get Me Error:', error);
-      throw error;
-    }
-  }
-
-  // Métodos de dashboard
+  // Métodos do dashboard
   async getDashboardStats() {
-    try {
-      const response = await this.request('/admin/dashboard');
-      return response;
-    } catch (error) {
-      console.error('Dashboard Stats Error:', error);
-      throw error;
-    }
+    return await dashboardService.getStats();
   }
 
   async getDashboardNotifications() {
-    try {
-      const response = await this.request('/admin/dashboard/notifications');
-      return response;
-    } catch (error) {
-      console.error('Dashboard Notifications Error:', error);
-      throw error;
-    }
+    return await dashboardService.getNotifications();
   }
 
-  // Gerenciamento de token e usuário
-  setToken(token) {
-    this.token = token;
-    localStorage.setItem('erlene_token', token);
-  }
-
-  setUser(user) {
-    localStorage.setItem('erlene_user', JSON.stringify(user));
-    // Manter compatibilidade
-    localStorage.setItem('user', JSON.stringify(user));
+  // Método para verificar autenticação
+  isAuthenticated() {
+    const token = localStorage.getItem('authToken') || 
+                  localStorage.getItem('erlene_token') || 
+                  localStorage.getItem('token');
+    return !!token;
   }
 
   getUser() {
-    const user = localStorage.getItem('erlene_user');
-    return user ? JSON.parse(user) : null;
-  }
-
-  getToken() {
-    return this.token || localStorage.getItem('erlene_token');
-  }
-
-  clearAuth() {
-    this.token = null;
-    localStorage.removeItem('erlene_token');
-    localStorage.removeItem('erlene_user');
-    // Manter compatibilidade com sistema antigo
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('portalAuth');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('user');
-  }
-
-  isAuthenticated() {
-    return !!this.getToken();
-  }
-
-  // Método para teste de conexão
-  async testConnection() {
-    try {
-      const response = await this.request('/admin/dashboard', { 
-        method: 'GET'
-      });
-      return { success: true, data: response };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
   }
 }
 
