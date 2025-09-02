@@ -1,8 +1,10 @@
-import apiClient from './apiClient';
+import { api } from './api';
+
+const apiClient = api;
 
 export const clientsService = {
-  // Buscar todos os clientes (nome correto que frontend usa)
-  async getClients(params = {}) {
+  // Buscar todos os clientes
+  async getAll(params = {}) {
     try {
       const response = await apiClient.get('/admin/clients', { params });
       return {
@@ -19,8 +21,8 @@ export const clientsService = {
     }
   },
 
-  // Criar cliente (nome correto que frontend usa)
-  async createClient(data) {
+  // Criar cliente
+  async create(data) {
     try {
       const response = await apiClient.post('/admin/clients', data);
       return {
@@ -37,8 +39,8 @@ export const clientsService = {
     }
   },
 
-  // Atualizar cliente (nome correto que frontend usa)
-  async updateClient(id, data) {
+  // Atualizar cliente
+  async update(id, data) {
     try {
       const response = await apiClient.put(`/admin/clients/${id}`, data);
       return {
@@ -55,8 +57,25 @@ export const clientsService = {
     }
   },
 
-  // Deletar cliente (nome correto que frontend usa)
-  async deleteClient(id) {
+  // Buscar cliente por ID
+  async getById(id) {
+    try {
+      const response = await apiClient.get(`/admin/clients/${id}`);
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      console.error('Erro ao buscar cliente:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Cliente não encontrado'
+      };
+    }
+  },
+
+  // Deletar cliente
+  async delete(id) {
     try {
       await apiClient.delete(`/admin/clients/${id}`);
       return {
@@ -72,7 +91,7 @@ export const clientsService = {
     }
   },
 
-  // Buscar responsáveis (nome correto que frontend usa)
+  // Buscar responsáveis
   async getResponsaveis() {
     try {
       const response = await apiClient.get('/admin/clients/responsaveis');
@@ -89,7 +108,7 @@ export const clientsService = {
     }
   },
 
-  // Buscar CEP (nome correto que frontend usa)
+  // Buscar CEP
   async buscarCep(cep) {
     try {
       const response = await apiClient.get(`/admin/clients/buscar-cep/${cep}`);
@@ -106,7 +125,7 @@ export const clientsService = {
     }
   },
 
-  // Obter estatísticas (nome correto que frontend usa)
+  // Obter estatísticas
   async getStats() {
     try {
       const response = await apiClient.get('/admin/clients/stats');
@@ -123,7 +142,7 @@ export const clientsService = {
     }
   },
 
-  // Validar documento
+  // Validar CPF/CNPJ único
   async validateDocument(document, type, excludeId = null) {
     try {
       const params = { document, type };
@@ -144,7 +163,7 @@ export const clientsService = {
     }
   },
 
-  // Obter processos do cliente (novos métodos)
+  // Obter processos do cliente
   async getClientProcessos(clienteId) {
     try {
       const response = await apiClient.get(`/admin/clients/${clienteId}/processos`);
@@ -155,7 +174,7 @@ export const clientsService = {
     }
   },
 
-  // Obter documentos do cliente (novos métodos)
+  // Obter documentos do cliente
   async getClientDocumentos(clienteId) {
     try {
       const response = await apiClient.get(`/admin/clients/${clienteId}/documentos`);
@@ -167,5 +186,5 @@ export const clientsService = {
   }
 };
 
-// Export default para compatibilidade
+// Export default também para compatibilidade
 export default clientsService;

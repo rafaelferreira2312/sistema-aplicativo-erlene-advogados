@@ -41,3 +41,9 @@ Route::middleware('auth:api')->prefix('admin')->group(function () {
         Route::delete('/{id}', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'destroy']);
     });
 });
+
+// Rotas específicas de clientes
+Route::middleware('auth:api')->prefix('admin')->group(function () {
+    Route::get('clients/{clienteId}/processos', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'processos']);
+    Route::get('clients/{clienteId}/documentos', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'documentos']);
+});
