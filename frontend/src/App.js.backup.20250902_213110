@@ -16,7 +16,6 @@ import EditClient from './components/clients/EditClient';
 import Processes from './pages/admin/Processes';
 import NewProcess from './components/processes/NewProcess';
 import EditProcess from './components/processes/EditProcess';
-import ProcessDetails from './components/processes/ProcessDetails';
 import Audiencias from './pages/admin/Audiencias';
 import NewAudiencia from './components/audiencias/NewAudiencia';
 import EditAudiencia from './components/audiencias/EditAudiencia';
@@ -40,22 +39,28 @@ import Settings from "./pages/admin/Settings";
 import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota
+// Componente de proteção de rota CORRIGIDO
 const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
+  // Verificar múltiplas formas de autenticação para compatibilidade
   const token = localStorage.getItem('authToken') || localStorage.getItem('erlene_token') || localStorage.getItem('token');
   const isAuthFlag = localStorage.getItem('isAuthenticated') === 'true';
   const portalAuth = localStorage.getItem('portalAuth') === 'true';
   
   const isAuthenticated = !!(token || isAuthFlag);
+  
+  // Determinar tipo de usuário
   const userType = localStorage.getItem('userType') || (portalAuth ? 'cliente' : 'admin');
 
+  // Se requer autenticação e não está autenticado
   if (requiredAuth && !isAuthenticated) {
+    // Redirecionar para o login correto baseado no tipo esperado
     if (allowedTypes.includes('cliente')) {
       return <Navigate to="/portal/login" replace />;
     }
     return <Navigate to="/login" replace />;
   }
 
+  // Se não requer autenticação mas está autenticado, redirecionar para dashboard
   if (!requiredAuth && isAuthenticated) {
     if (userType === 'cliente') {
       return <Navigate to="/portal/dashboard" replace />;
@@ -63,6 +68,7 @@ const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) =>
     return <Navigate to="/admin" replace />;
   }
 
+  // Verificar tipo de usuário permitido
   if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
     if (userType === 'cliente') {
       return <Navigate to="/portal/dashboard" replace />;
@@ -92,6 +98,7 @@ function App() {
     <Router>
       <div className="App h-screen">
         <Routes>
+          {/* Rota raiz redireciona para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Login Administrativo */}
@@ -104,7 +111,7 @@ function App() {
             }
           />
           
-          {/* Portal do Cliente */}
+          {/* Portal do Cliente - Login */}
           <Route
             path="/portal/login"
             element={
@@ -114,6 +121,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Dashboard */}
           <Route
             path="/portal/dashboard"
             element={
@@ -123,6 +131,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Processos */}
           <Route
             path="/portal/processos"
             element={
@@ -132,6 +141,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Documentos */}
           <Route
             path="/portal/documentos"
             element={
@@ -141,6 +151,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Pagamentos */}
           <Route
             path="/portal/pagamentos"
             element={
@@ -150,6 +161,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Mensagens */}
           <Route
             path="/portal/mensagens"
             element={
@@ -159,6 +171,7 @@ function App() {
             }
           />
           
+          {/* Portal do Cliente - Perfil */}
           <Route
             path="/portal/perfil"
             element={
@@ -180,13 +193,9 @@ function App() {
                     <Route path="clientes" element={<Clients />} />
                     <Route path="clientes/novo" element={<NewClient />} />
                     <Route path="clientes/:id" element={<EditClient />} />
-                    
-                    {/* ROTAS DE PROCESSOS ATUALIZADAS */}
                     <Route path="processos" element={<Processes />} />
                     <Route path="processos/novo" element={<NewProcess />} />
-                    <Route path="processos/:id" element={<ProcessDetails />} />
-                    <Route path="processos/:id/editar" element={<EditProcess />} />
-                    
+                    <Route path="processos/:id" element={<EditProcess />} />
                     <Route path="audiencias" element={<Audiencias />} />
                     <Route path="audiencias/nova" element={<NewAudiencia />} />
                     <Route path="audiencias/:id/editar" element={<EditAudiencia />} />

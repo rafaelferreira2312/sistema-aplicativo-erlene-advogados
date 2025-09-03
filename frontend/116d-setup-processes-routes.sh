@@ -1,3 +1,46 @@
+#!/bin/bash
+
+# Script 116d - Setup Rotas Processos (Parte 1)
+# Sistema Erlene Advogados - Configurar rotas no App.js
+# Execução: chmod +x 116d-setup-processes-routes.sh && ./116d-setup-processes-routes.sh
+# EXECUTAR DENTRO DA PASTA: frontend/
+
+echo "🔧 Script 116d - Configurando rotas de processos no App.js..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    echo "📁 Comando correto:"
+    echo "   cd frontend"
+    echo "   chmod +x 116d-setup-processes-routes.sh && ./116d-setup-processes-routes.sh"
+    exit 1
+fi
+
+echo "1️⃣ Verificando estrutura anterior..."
+
+# Verificar se processesService.js existe
+if [ ! -f "src/services/processesService.js" ]; then
+    echo "❌ Erro: processesService.js não encontrado. Execute primeiro os scripts 116a, 116b, 116c"
+    exit 1
+fi
+
+# Verificar se Processes.js existe
+if [ ! -f "src/pages/admin/Processes.js" ]; then
+    echo "❌ Erro: Processes.js não encontrado. Execute primeiro os scripts 116b e 116c"
+    exit 1
+fi
+
+echo "2️⃣ Fazendo backup do App.js atual..."
+
+# Backup do App.js original
+if [ -f "src/App.js" ]; then
+    cp src/App.js src/App.js.backup.$(date +%Y%m%d_%H%M%S)
+    echo "✅ Backup criado: App.js.backup.$(date +%Y%m%d_%H%M%S)"
+fi
+
+echo "3️⃣ Atualizando App.js com rotas de processos..."
+
+cat > src/App.js << 'EOF'
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
@@ -16,7 +59,6 @@ import EditClient from './components/clients/EditClient';
 import Processes from './pages/admin/Processes';
 import NewProcess from './components/processes/NewProcess';
 import EditProcess from './components/processes/EditProcess';
-import ProcessDetails from './components/processes/ProcessDetails';
 import Audiencias from './pages/admin/Audiencias';
 import NewAudiencia from './components/audiencias/NewAudiencia';
 import EditAudiencia from './components/audiencias/EditAudiencia';
@@ -184,7 +226,6 @@ function App() {
                     {/* ROTAS DE PROCESSOS ATUALIZADAS */}
                     <Route path="processos" element={<Processes />} />
                     <Route path="processos/novo" element={<NewProcess />} />
-                    <Route path="processos/:id" element={<ProcessDetails />} />
                     <Route path="processos/:id/editar" element={<EditProcess />} />
                     
                     <Route path="audiencias" element={<Audiencias />} />
@@ -223,3 +264,25 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "4️⃣ Verificando se arquivos foram criados corretamente..."
+
+if [ -f "src/App.js" ]; then
+    echo "✅ App.js atualizado com rotas de processos"
+    echo "📊 Linhas do arquivo: $(wc -l < src/App.js)"
+else
+    echo "❌ Erro ao atualizar App.js"
+    exit 1
+fi
+
+echo ""
+echo "📋 Rotas de Processos Configuradas:"
+echo "   • /admin/processos - Lista de processos"
+echo "   • /admin/processos/novo - Cadastro de processo"
+echo "   • /admin/processos/:id/editar - Edição de processo"
+echo ""
+echo "✅ Script 116d concluído!"
+echo "⭐ Próximo: Script para criar ProcessDetails.js"
+echo ""
+echo "Digite 'continuar' para criar o componente ProcessDetails.js"

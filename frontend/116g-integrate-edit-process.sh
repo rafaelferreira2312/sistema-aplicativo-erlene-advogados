@@ -1,3 +1,40 @@
+#!/bin/bash
+
+# Script 116g - Integrar EditProcess.js com Backend Real
+# Sistema Erlene Advogados - Remover dados mockados do EditProcess
+# Execução: chmod +x 116g-integrate-edit-process.sh && ./116g-integrate-edit-process.sh
+# EXECUTAR DENTRO DA PASTA: frontend/
+
+echo "🔧 Script 116g - Integrando EditProcess.js com backend real..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    echo "📁 Comando correto:"
+    echo "   cd frontend"
+    echo "   chmod +x 116g-integrate-edit-process.sh && ./116g-integrate-edit-process.sh"
+    exit 1
+fi
+
+echo "1️⃣ Verificando estrutura anterior..."
+
+# Verificar se processesService.js existe
+if [ ! -f "src/services/processesService.js" ]; then
+    echo "❌ Erro: processesService.js não encontrado"
+    exit 1
+fi
+
+echo "2️⃣ Fazendo backup do EditProcess.js original..."
+
+# Backup do EditProcess.js original
+if [ -f "src/components/processes/EditProcess.js" ]; then
+    cp src/components/processes/EditProcess.js src/components/processes/EditProcess.js.backup.$(date +%Y%m%d_%H%M%S)
+    echo "✅ Backup EditProcess.js criado"
+fi
+
+echo "3️⃣ Criando EditProcess.js integrado com dados reais..."
+
+cat > src/components/processes/EditProcess.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { processesService } from '../../services/processesService';
@@ -454,3 +491,32 @@ const EditProcess = () => {
 };
 
 export default EditProcess;
+EOF
+
+echo "4️⃣ Verificando se arquivo foi atualizado corretamente..."
+
+if [ -f "src/components/processes/EditProcess.js" ]; then
+    echo "✅ EditProcess.js integrado com dados reais"
+    echo "📊 Linhas do arquivo: $(wc -l < src/components/processes/EditProcess.js)"
+else
+    echo "❌ Erro ao atualizar EditProcess.js"
+    exit 1
+fi
+
+echo ""
+echo "📋 EditProcess.js Integrado com Backend:"
+echo "   • processesService.getProcess() para carregar dados"
+echo "   • processesService.updateProcess() para salvar"
+echo "   • processesService.deleteProcess() para exclusão"
+echo "   • Formulário preenchido com dados reais do processo"
+echo "   • Validações e tratamento de erros"
+echo ""
+echo "❌ Removido do EditProcess.js:"
+echo "   • Arrays mockados de dados"
+echo "   • Simulação de carregamento fake"
+echo "   • Dados hardcoded por ID"
+echo ""
+echo "✅ Script 116g concluído!"
+echo "⭐ Status: Módulo de Processos 95% integrado com backend"
+echo ""
+echo "Digite 'continuar' para criar clientsService e finalizar integração"

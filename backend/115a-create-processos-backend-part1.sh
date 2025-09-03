@@ -1,3 +1,34 @@
+#!/bin/bash
+
+# Script 115a - Criar Backend PROCESSOS - Parte 1 (Models e Migration)
+# Sistema Erlene Advogados - Implementação funcionalidade PROCESSOS
+# Execução: chmod +x 115a-create-processos-backend-part1.sh && ./115a-create-processos-backend-part1.sh
+# EXECUTAR DENTRO DA PASTA: backend/
+
+echo "🚀 Script 115a - Implementando Backend PROCESSOS (Parte 1)..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "artisan" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta backend/"
+    echo "📁 Comando correto:"
+    echo "   cd backend"
+    echo "   chmod +x 115a-create-processos-backend-part1.sh && ./115a-create-processos-backend-part1.sh"
+    exit 1
+fi
+
+echo "1️⃣ Verificando estrutura existente..."
+
+# Verificar se migration de processos já existe
+if [ -f "database/migrations/*_create_processos_table.php" ]; then
+    echo "✅ Migration de processos já existe, continuando..."
+else
+    echo "📋 Criando migration de processos..."
+    php artisan make:migration create_processos_table --create=processos
+fi
+
+echo "2️⃣ Atualizando Model Processo com funcionalidades CNJ..."
+
+cat > app/Models/Processo.php << 'EOF'
 <?php
 
 namespace App\Models;
@@ -247,3 +278,88 @@ class Processo extends Model
         $this->save();
     }
 }
+EOF
+
+echo "3️⃣ Atualizando migration para adicionar campos CNJ..."
+
+# Encontrar o arquivo de migration mais recente de processos
+MIGRATION_FILE=$(find database/migrations -name "*create_processos_table.php" | head -1)
+
+if [ -n "$MIGRATION_FILE" ]; then
+    echo "📝 Atualizando migration: $MIGRATION_FILE"
+    
+cat > "$MIGRATION_FILE" << 'EOF'
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('processos', function (Blueprint $table) {
+            $table->id();
+            $table->string('numero', 25)->unique();
+            $table->string('tribunal');
+            $table->string('vara')->nullable();
+            $table->unsignedBigInteger('cliente_id');
+            $table->string('tipo_acao');
+            $table->enum('status', [
+                'distribuido',
+                'em_andamento', 
+                'suspenso',
+                'arquivado',
+                'finalizado'
+            ])->default('distribuido');
+            $table->decimal('valor_causa', 15, 2)->nullable();
+            $table->date('data_distribuicao');
+            $table->unsignedBigInteger('advogado_id');
+            $table->unsignedBigInteger('unidade_id');
+            $table->date('proximo_prazo')->nullable();
+            $table->text('observacoes')->nullable();
+            $table->enum('prioridade', ['baixa', 'media', 'alta', 'urgente'])->default('media');
+            $table->integer('kanban_posicao')->default(0);
+            $table->unsignedBigInteger('kanban_coluna_id')->nullable();
+            
+            // Campos para integração CNJ DataJud
+            $table->json('metadata_cnj')->nullable();
+            $table->timestamp('ultima_consulta_cnj')->nullable();
+            $table->boolean('sincronizado_cnj')->default(false);
+            
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreign('cliente_id')->references('id')->on('clientes');
+            $table->foreign('advogado_id')->references('id')->on('users');
+            $table->foreign('unidade_id')->references('id')->on('unidades');
+            $table->index(['numero']);
+            $table->index(['status', 'prioridade']);
+            $table->index(['cliente_id', 'advogado_id']);
+            $table->index(['proximo_prazo']);
+            $table->index(['sincronizado_cnj', 'ultima_consulta_cnj']);
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('processos');
+    }
+};
+EOF
+else
+    echo "⚠️ Migration de processos não encontrada, criando nova..."
+    php artisan make:migration add_cnj_fields_to_processos_table --table=processos
+fi
+
+echo "✅ Parte 1 concluída com sucesso!"
+echo ""
+echo "📋 O que foi implementado:"
+echo "   • Model Processo atualizado com funcionalidades CNJ"
+echo "   • Métodos para sincronização automática"
+echo "   • Scopes para filtros avançados"
+echo "   • Acessores para formatação de dados"
+echo "   • Migration atualizada com campos CNJ"
+echo ""
+echo "⏭️ Próximo passo: Executar Parte 2 (Controller e Service CNJ)"

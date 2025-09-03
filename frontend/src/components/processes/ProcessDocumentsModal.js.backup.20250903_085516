@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { processesService } from '../../services/processesService';
 import {
   XMarkIcon,
   DocumentIcon,
@@ -11,55 +10,40 @@ import {
 const ProcessDocumentsModal = ({ isOpen, onClose, processId, processNumber }) => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  // Mock data dos documentos
+  const mockDocuments = {
+    1: [
+      { id: 1, name: 'Petição Inicial.pdf', category: 'Petições', size: '2.5 MB', date: '2024-01-15', type: 'pdf' },
+      { id: 2, name: 'Comprovante Residência.pdf', category: 'Documentos', size: '1.2 MB', date: '2024-01-16', type: 'pdf' },
+      { id: 3, name: 'Contrato Social.pdf', category: 'Documentos', size: '3.8 MB', date: '2024-01-20', type: 'pdf' }
+    ],
+    2: [
+      { id: 4, name: 'CTPS Digital.pdf', category: 'Documentos', size: '1.5 MB', date: '2024-01-20', type: 'pdf' },
+      { id: 5, name: 'Reclamatória Trabalhista.docx', category: 'Petições', size: '2.2 MB', date: '2024-01-22', type: 'docx' }
+    ],
+    3: [
+      { id: 6, name: 'Certidão Casamento.pdf', category: 'Documentos', size: '1.0 MB', date: '2024-02-01', type: 'pdf' },
+      { id: 7, name: 'Petição Divórcio.pdf', category: 'Petições', size: '2.1 MB', date: '2024-02-02', type: 'pdf' }
+    ]
+  };
 
   useEffect(() => {
     if (isOpen && processId) {
-      loadDocuments();
+      setLoading(true);
+      setTimeout(() => {
+        setDocuments(mockDocuments[processId] || []);
+        setLoading(false);
+      }, 800);
     }
   }, [isOpen, processId]);
 
-  const loadDocuments = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await processesService.getDocuments(processId);
-      
-      if (response.success) {
-        setDocuments(response.data.data || []);
-      } else {
-        setError('Erro ao carregar documentos');
-      }
-    } catch (err) {
-      console.error('Erro ao carregar documentos:', err);
-      setError('Erro de conexão ao carregar documentos');
-    } finally {
-      setLoading(false);
+  const getFileIcon = (type) => {
+    switch (type) {
+      case 'pdf': return '🔴';
+      case 'docx': return '🔵';
+      default: return '📄';
     }
-  };
-
-  const getFileIcon = (mimeType) => {
-    if (!mimeType) return '📄';
-    
-    if (mimeType.includes('pdf')) return '📕';
-    if (mimeType.includes('word') || mimeType.includes('document')) return '📘';
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📗';
-    if (mimeType.includes('image')) return '🖼️';
-    
-    return '📄';
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   if (!isOpen) return null;
@@ -90,17 +74,6 @@ const ProcessDocumentsModal = ({ isOpen, onClose, processId, processNumber }) =>
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
               <span className="ml-3 text-gray-600">Carregando documentos...</span>
             </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <DocumentIcon className="mx-auto h-12 w-12 text-red-400" />
-              <h3 className="mt-2 text-sm font-medium text-red-900">{error}</h3>
-              <button 
-                onClick={loadDocuments}
-                className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-              >
-                Tentar novamente
-              </button>
-            </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {documents.length === 0 ? (
@@ -113,34 +86,17 @@ const ProcessDocumentsModal = ({ isOpen, onClose, processId, processNumber }) =>
                 documents.map((doc) => (
                   <div key={doc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                     <div className="flex items-center space-x-4">
-                      <div className="text-2xl">{getFileIcon(doc.mime_type)}</div>
+                      <div className="text-2xl">{getFileIcon(doc.type)}</div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{doc.nome || doc.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {doc.categoria || 'Documento'} • {formatFileSize(doc.tamanho || doc.size)} • {formatDate(doc.created_at)}
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{doc.name}</div>
+                        <div className="text-xs text-gray-500">{doc.category} • {doc.size}</div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button 
-                        className="p-2 text-blue-600 hover:text-blue-800 rounded-lg" 
-                        title="Visualizar"
-                        onClick={() => window.open(doc.url || doc.caminho, '_blank')}
-                      >
+                      <button className="p-2 text-blue-600 hover:text-blue-800 rounded-lg" title="Visualizar">
                         <EyeIcon className="w-4 h-4" />
                       </button>
-                      <button 
-                        className="p-2 text-green-600 hover:text-green-800 rounded-lg" 
-                        title="Download"
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = doc.download_url || doc.url || doc.caminho;
-                          link.download = doc.nome || doc.name;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                      >
+                      <button className="p-2 text-green-600 hover:text-green-800 rounded-lg" title="Download">
                         <ArrowDownTrayIcon className="w-4 h-4" />
                       </button>
                     </div>
