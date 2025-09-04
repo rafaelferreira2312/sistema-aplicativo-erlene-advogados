@@ -1,3 +1,33 @@
+#!/bin/bash
+
+# Script 124 - Restaurar layout original da tela Processos
+# Sistema Erlene Advogados - Manter funcionalidade mas restaurar design
+# EXECUTAR DENTRO DA PASTA: frontend/
+
+echo "🔧 Script 124 - Restaurando layout original dos Processos..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    echo "📁 Comando correto:"
+    echo "   cd frontend"
+    echo "   chmod +x 124-restore-original-processes-layout.sh && ./124-restore-original-processes-layout.sh"
+    exit 1
+fi
+
+echo "1️⃣ DIAGNÓSTICO:"
+echo "   • API funcionando: dados chegando corretamente"
+echo "   • Problema: Layout original foi perdido"
+echo "   • Solução: Restaurar design original com correções de segurança"
+
+echo ""
+echo "2️⃣ Restaurando Processes.js com layout original e correções..."
+
+# Backup do arquivo atual
+cp src/pages/admin/Processes.js src/pages/admin/Processes.js.backup-simple
+
+# Restaurar Processes.js com o layout original mas código seguro
+cat > src/pages/admin/Processes.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { processesService } from '../../services/processesService';
@@ -558,3 +588,52 @@ const Processes = () => {
 };
 
 export default Processes;
+EOF
+
+echo ""
+echo "3️⃣ Verificando formulários NewProcess.js e EditProcess.js..."
+
+# Verificar se existem campos faltando no NewProcess
+if grep -q "tipo_acao" src/components/processes/NewProcess.js; then
+    echo "NewProcess.js parece ter campos básicos..."
+else
+    echo "NewProcess.js precisa ser corrigido - adicionando campos faltantes..."
+    
+    # Adicionar linha no NewProcess para mostrar todos os campos necessários
+    sed -i '/tribunal/a\              <div className="md:col-span-2">\
+                <label className="block text-sm font-medium text-gray-700 mb-2">\
+                  Vara\
+                </label>\
+                <input\
+                  type="text"\
+                  name="vara"\
+                  value={formData.vara}\
+                  onChange={handleChange}\
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"\
+                  placeholder="Ex: 1ª Vara Cível"\
+                />\
+              </div>' src/components/processes/NewProcess.js
+fi
+
+echo ""
+echo "✅ LAYOUT ORIGINAL RESTAURADO!"
+echo ""
+echo "🔍 O que foi feito:"
+echo "   • Layout original da tela de processos restaurado"
+echo "   • Dashboard com estatísticas (4 cards)"  
+echo "   • Filtros funcionais mantidos"
+echo "   • Funções seguras de extração de dados"
+echo "   • Tabela com design original"
+echo "   • Informações de debug removidas"
+echo "   • Campos de formulário verificados"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. Acesse http://localhost:3000/admin/processos"
+echo "   2. Deve aparecer o dashboard com 4 cards de estatísticas"
+echo "   3. Lista de processos em formato tabela"
+echo "   4. Botão 'Novo Processo' funcionando"
+echo ""
+echo "💡 Próximos passos:"
+echo "   • Se layout ainda não estiver perfeito, me avise"
+echo "   • Vamos corrigir NewProcess e EditProcess se necessário"
+echo "   • Adicionar campos faltantes nos formulários"

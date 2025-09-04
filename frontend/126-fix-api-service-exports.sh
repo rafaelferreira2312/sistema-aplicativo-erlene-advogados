@@ -1,3 +1,46 @@
+#!/bin/bash
+
+# Script 126 - Corrigir API Service Exports/Imports
+# Sistema Erlene Advogados - Resolver erro de export default não encontrado
+# EXECUTAR DENTRO DA PASTA: frontend/
+
+echo "🔧 Script 126 - Corrigindo API Service Exports/Imports..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    echo "📁 Comando correto:"
+    echo "   cd frontend"
+    echo "   chmod +x 126-fix-api-service-exports.sh && ./126-fix-api-service-exports.sh"
+    exit 1
+fi
+
+echo "1️⃣ DIAGNÓSTICO DO PROBLEMA:"
+echo "   • Erro: export 'default' (imported as 'apiService') was not found"
+echo "   • Causa: api.js só tem exports nomeados, falta export default"
+echo "   • Arquivos afetados: Login/index.js e PortalLogin.js"
+echo "   • Solução: Criar api.js com export default correto"
+
+echo ""
+echo "2️⃣ Fazendo backup dos arquivos atuais..."
+
+# Backup dos arquivos existentes
+cp src/services/api.js src/services/api.js.backup-126 2>/dev/null || echo "   • api.js será criado do zero"
+cp src/pages/auth/Login/index.js src/pages/auth/Login/index.js.backup-126 2>/dev/null || echo "   • Login/index.js será criado"
+cp src/pages/portal/PortalLogin.js src/pages/portal/PortalLogin.js.backup-126 2>/dev/null || echo "   • PortalLogin.js será criado"
+
+echo ""
+echo "3️⃣ Criando estrutura de diretórios..."
+
+# Criar diretórios necessários
+mkdir -p src/services
+mkdir -p src/pages/auth/Login
+mkdir -p src/pages/portal
+
+echo ""
+echo "4️⃣ Criando api.js com export default e métodos completos..."
+
+cat > src/services/api.js << 'EOF'
 // API Service - Sistema Erlene Advogados
 // Serviço principal para comunicação com backend Laravel
 
@@ -274,3 +317,21 @@ export const apiRequest = apiService.request.bind(apiService);
 export const testApiConnection = apiService.testApiConnection.bind(apiService);
 export const loginForToken = apiService.loginForToken.bind(apiService);
 export { apiService };
+EOF
+
+echo ""
+echo "✅ SCRIPT 126 CONCLUÍDO!"
+echo ""
+echo "📋 O que foi criado:"
+echo "   • src/services/api.js com export default apiService"
+echo "   • Classe ApiService completa com todos os métodos"
+echo "   • Compatibilidade com imports existentes"
+echo "   • Métodos de login admin e portal"
+echo "   • Sistema de token automático"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. npm start (dentro da pasta frontend)"
+echo "   2. O erro de export 'default' deve desaparecer"
+echo "   3. Verifique no console se não há erros de compilação"
+echo ""
+echo "✋ AGUARDANDO SUA CONFIRMAÇÃO para continuar com o próximo script..."

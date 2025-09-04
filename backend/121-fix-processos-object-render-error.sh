@@ -1,3 +1,31 @@
+#!/bin/bash
+
+# Script 121 - Corrigir erro de renderização de objeto no React
+# Sistema Erlene Advogados - Erro: Objects are not valid as a React child
+# EXECUTAR DENTRO DA PASTA: backend/
+
+echo "🔧 Script 121 - Corrigindo erro de renderização de objeto React..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "artisan" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta backend/"
+    echo "📁 Comando correto:"
+    echo "   cd backend"
+    echo "   chmod +x 121-fix-processos-object-render-error.sh && ./121-fix-processos-object-render-error.sh"
+    exit 1
+fi
+
+echo "1️⃣ DIAGNÓSTICO DO ERRO:"
+echo "   • Erro: Objects are not valid as a React child"
+echo "   • Causa: Objeto sendo renderizado diretamente no JSX"
+echo "   • Localização: Provavelmente em Processes.js linha 414"
+echo "   • Solução: Garantir que apenas strings/números sejam renderizados"
+
+echo ""
+echo "2️⃣ Primeiro, vamos corrigir a API para retornar dados no formato correto..."
+
+# Corrigir ProcessController para retornar dados limpos
+cat > app/Http/Controllers/Api/Admin/Processes/ProcessController.php << 'EOF'
 <?php
 
 namespace App\Http\Controllers\Api\Admin\Processes;
@@ -362,3 +390,198 @@ class ProcessController extends Controller
         return response()->json(['success' => true, 'data' => ['novas_movimentacoes' => 0]]);
     }
 }
+EOF
+
+echo "3️⃣ Verificando se existe User model básico..."
+
+if [ ! -f "app/Models/User.php" ]; then
+    echo "Criando User model básico..."
+    
+    cat > app/Models/User.php << 'EOF'
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+class User extends Authenticatable implements JWTSubject
+{
+    use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'cpf',
+        'telefone',
+        'oab',
+        'perfil',
+        'unidade_id',
+        'status'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'ultimo_acesso' => 'datetime',
+        'status' => 'boolean'
+    ];
+
+    // JWT Methods
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    // Relacionamentos
+    public function processos()
+    {
+        return $this->hasMany(Processo::class, 'advogado_id');
+    }
+}
+EOF
+fi
+
+echo "4️⃣ Populando dados de teste..."
+
+php artisan tinker --execute="
+try {
+    // Verificar se já existem dados
+    \$userCount = App\Models\User::count();
+    \$clienteCount = App\Models\Cliente::count();
+    \$processoCount = App\Models\Processo::count();
+    
+    echo 'Estado atual:';
+    echo PHP_EOL . 'Usuários: ' . \$userCount;
+    echo PHP_EOL . 'Clientes: ' . \$clienteCount;
+    echo PHP_EOL . 'Processos: ' . \$processoCount;
+    
+    if (\$userCount == 0) {
+        echo PHP_EOL . PHP_EOL . 'Criando usuário admin...';
+        App\Models\User::create([
+            'name' => 'Dra. Erlene Chaves Silva',
+            'email' => 'admin@erlene.com',
+            'password' => bcrypt('123456'),
+            'cpf' => '123.456.789-00',
+            'telefone' => '(11) 99999-9999',
+            'oab' => 'OAB/SP 123456',
+            'perfil' => 'admin',
+            'status' => true
+        ]);
+        echo ' - Criado!';
+    }
+    
+    if (\$clienteCount == 0) {
+        echo PHP_EOL . PHP_EOL . 'Criando clientes teste...';
+        App\Models\Cliente::create([
+            'nome' => 'João Silva Santos',
+            'tipo_pessoa' => 'PF',
+            'cpf_cnpj' => '123.456.789-00',
+            'email' => 'joao@email.com',
+            'telefone' => '(11) 91234-5678',
+            'endereco' => 'Rua das Flores, 123, São Paulo',
+            'ativo' => true
+        ]);
+        
+        App\Models\Cliente::create([
+            'nome' => 'Empresa ABC Ltda',
+            'tipo_pessoa' => 'PJ',
+            'cpf_cnpj' => '12.345.678/0001-90',
+            'email' => 'contato@abc.com.br',
+            'telefone' => '(11) 3333-4444',
+            'endereco' => 'Av. Paulista, 1000, São Paulo',
+            'ativo' => true
+        ]);
+        echo ' - Criados!';
+    }
+    
+    if (\$processoCount == 0) {
+        echo PHP_EOL . PHP_EOL . 'Criando processos teste...';
+        \$user = App\Models\User::first();
+        \$cliente1 = App\Models\Cliente::where('tipo_pessoa', 'PF')->first();
+        \$cliente2 = App\Models\Cliente::where('tipo_pessoa', 'PJ')->first();
+        
+        if (\$user && \$cliente1) {
+            App\Models\Processo::create([
+                'numero' => '0000335-25.2018.4.01.3202',
+                'cliente_id' => \$cliente1->id,
+                'tipo_acao' => 'Ação de Cobrança',
+                'tribunal' => 'TRTSP',
+                'vara' => '1ª Vara Cível',
+                'valor_causa' => 15000.50,
+                'status' => 'em_andamento',
+                'advogado_id' => \$user->id,
+                'prioridade' => 'alta',
+                'data_distribuicao' => '2024-01-15',
+                'observacoes' => 'Processo de cobrança de honorários advocatícios'
+            ]);
+        }
+        
+        if (\$user && \$cliente2) {
+            App\Models\Processo::create([
+                'numero' => '0000445-35.2018.5.02.0001',
+                'cliente_id' => \$cliente2->id,
+                'tipo_acao' => 'Reclamação Trabalhista',
+                'tribunal' => 'TRT2',
+                'vara' => '12ª Vara do Trabalho',
+                'valor_causa' => 25000.00,
+                'status' => 'suspenso',
+                'advogado_id' => \$user->id,
+                'prioridade' => 'media',
+                'data_distribuicao' => '2024-01-20',
+                'observacoes' => 'Reclamação trabalhista - férias não pagas'
+            ]);
+        }
+        echo ' - Criados!';
+    }
+    
+    echo PHP_EOL . PHP_EOL . 'Estado final:';
+    echo PHP_EOL . 'Usuários: ' . App\Models\User::count();
+    echo PHP_EOL . 'Clientes: ' . App\Models\Cliente::count();
+    echo PHP_EOL . 'Processos: ' . App\Models\Processo::count();
+    
+} catch (Exception \$e) {
+    echo PHP_EOL . 'ERRO: ' . \$e->getMessage();
+}
+"
+
+echo ""
+echo "5️⃣ Limpando cache e testando API..."
+
+# Limpar caches
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
+
+echo ""
+echo "✅ CORREÇÕES APLICADAS!"
+echo ""
+echo "🔍 O que foi corrigido:"
+echo "   • ProcessController formatando dados corretamente para React"
+echo "   • Objetos sempre retornados como arrays associativos simples"
+echo "   • Campos 'name' do advogado garantidamente como string"
+echo "   • Dados de teste populados corretamente"
+echo "   • Cache limpo"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. Certifique-se que backend está rodando: php artisan serve"
+echo "   2. Acesse http://localhost:3000/admin/processos"
+echo "   3. O erro 'Objects are not valid as a React child' deve ter desaparecido"
+echo "   4. Processos devem carregar e exibir normalmente"
+echo ""
+echo "💡 Se ainda houver erro:"
+echo "   • Verificar console do navegador para erros específicos"  
+echo "   • Verificar logs Laravel: tail -f storage/logs/laravel.log"
+echo "   • Limpar cache do React: Ctrl+F5 no navegador"

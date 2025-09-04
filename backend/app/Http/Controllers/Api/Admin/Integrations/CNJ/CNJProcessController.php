@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Integrations\CNJ;
 
 use App\Http\Controllers\Controller;
 use App\Models\Processo;
@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
-class ProcessController extends Controller
+class CNJProcessController extends Controller
 {
     protected $cnjService;
 
@@ -71,7 +71,7 @@ class ProcessController extends Controller
                 'status_prazo' => $processo->status_prazo,
                 'precisa_sincronizar_cnj' => $processo->precisa_sincronizar_cnj,
                 'total_movimentacoes' => $processo->movimentacoes()->count(),
-                'total_documentos' => $processo->documentos()->count()
+                'total_documentos' => 0 // TODO: implementar quando documentos estiver disponível
             ]);
         });
 
@@ -170,7 +170,7 @@ class ProcessController extends Controller
             'movimentacoes' => function($query) {
                 $query->orderBy('data', 'desc')->limit(10);
             },
-            'documentos',
+            //'documentos', // TODO: implementar quando relacionamento estiver disponível
             'atendimentos' => function($query) {
                 $query->orderBy('data_hora', 'desc')->limit(5);
             }

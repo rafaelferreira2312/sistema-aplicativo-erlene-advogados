@@ -1,3 +1,30 @@
+#!/bin/bash
+
+# Script 119 - Corrigir relacionamento Processo-Documentos
+# Sistema Erlene Advogados - Corrigir erro coluna documentos_ged.entidade_type
+# EXECUTAR DENTRO DA PASTA: backend/
+
+echo "🔧 Script 119 - Corrigindo relacionamento Processo-Documentos..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "artisan" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta backend/"
+    exit 1
+fi
+
+echo "1️⃣ ERRO IDENTIFICADO:"
+echo "   • ProcessController tentando usar relacionamento polimórfico"  
+echo "   • Migration documentos_ged tem apenas cliente_id"
+echo "   • Model Processo tentando usar morphMany que não existe"
+
+echo ""
+echo "2️⃣ Corrigindo Model Processo - removendo relacionamento inexistente..."
+
+# Fazer backup do modelo atual
+cp app/Models/Processo.php app/Models/Processo.php.backup
+
+# Corrigir Model Processo para não usar relacionamento documentos inexistente
+cat > app/Models/Processo.php << 'EOF'
 <?php
 
 namespace App\Models;
@@ -245,3 +272,95 @@ class Processo extends Model
         $this->save();
     }
 }
+EOF
+
+echo "3️⃣ Corrigindo ProcessController para não usar relacionamento documentos..."
+
+# Fazer backup do controller atual  
+cp app/Http/Controllers/Api/Admin/ProcessController.php app/Http/Controllers/Api/Admin/ProcessController.php.backup
+
+# Corrigir método index removendo contagem de documentos
+sed -i "s/'total_documentos' => \$processo->documentos()->count()/'total_documentos' => 0 \/\/ TODO: implementar quando documentos estiver disponível/" app/Http/Controllers/Api/Admin/ProcessController.php
+
+# Corrigir método show removendo relacionamento documentos
+sed -i "s/'documentos',/\/\/'documentos', \/\/ TODO: implementar quando relacionamento estiver disponível/" app/Http/Controllers/Api/Admin/ProcessController.php
+
+echo "4️⃣ Verificando Model Movimentacao existe..."
+
+if [ ! -f "app/Models/Movimentacao.php" ]; then
+    echo "📄 Criando Model Movimentacao..."
+    
+    cat > app/Models/Movimentacao.php << 'EOF'
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Movimentacao extends Model
+{
+    use HasFactory;
+
+    protected $table = 'movimentacoes';
+
+    protected $fillable = [
+        'processo_id',
+        'data',
+        'descricao',
+        'tipo',
+        'documento_url',
+        'metadata'
+    ];
+
+    protected $casts = [
+        'data' => 'datetime',
+        'metadata' => 'json'
+    ];
+
+    public function processo()
+    {
+        return $this->belongsTo(Processo::class, 'processo_id');
+    }
+}
+EOF
+fi
+
+echo "5️⃣ Limpando cache e testando..."
+
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
+
+echo "6️⃣ Testando se tabelas existem..."
+
+php artisan tinker --execute="
+try {
+    echo 'Verificando tabelas...' . PHP_EOL;
+    echo 'Processos: ' . App\Models\Processo::count() . PHP_EOL;
+    echo 'Clientes: ' . App\Models\Cliente::count() . PHP_EOL;
+    if (class_exists('App\Models\Movimentacao')) {
+        echo 'Movimentacoes: ' . App\Models\Movimentacao::count() . PHP_EOL;
+    }
+} catch (Exception \$e) {
+    echo 'Erro: ' . \$e->getMessage() . PHP_EOL;
+}
+"
+
+echo ""
+echo "✅ Correções Aplicadas com Sucesso!"
+echo ""
+echo "🔍 O que foi corrigido:"
+echo "   • Relacionamento documentos removido do Model Processo"
+echo "   • ProcessController corrigido para não usar total_documentos"
+echo "   • Model Movimentacao criado se não existia"
+echo "   • Cache limpo"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   • Acesse http://localhost:3000/admin/processos"
+echo "   • O erro de entidade_type deve ter desaparecido"
+echo "   • Processos devem carregar corretamente"
+echo ""
+echo "💡 Se ainda houver erro:"
+echo "   • Verifique: tail -f storage/logs/laravel.log"
+echo "   • Teste diretamente: curl -H 'Authorization: Bearer TOKEN' http://localhost:8000/api/admin/processes"

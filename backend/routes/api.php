@@ -8,6 +8,16 @@ use App\Http\Controllers\Api\AuthController;
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/portal/login', [AuthController::class, 'portalLogin']);
 
+// Health check (público)
+Route::get('/health', function() {
+    return response()->json([
+        'success' => true,
+        'status' => 'API funcionando',
+        'timestamp' => now(),
+        'version' => '1.0.0'
+    ]);
+});
+
 // Rotas protegidas
 Route::middleware('auth:api')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -48,22 +58,53 @@ Route::middleware('auth:api')->prefix('admin')->group(function () {
     Route::get('clients/{clienteId}/documentos', [App\Http\Controllers\Api\Admin\Clients\ClientController::class, 'documentos']);
 });
 
-// Rotas de Processos - Sistema Erlene Advogados
+// ==========================================
+// PROCESSOS - ROTAS BÁSICAS (SEM CNJ)
+// ==========================================
 Route::middleware(['auth:api'])->prefix('admin')->group(function () {
     
-    // CRUD Processos
-    Route::get('/processes', [App\Http\Controllers\Api\Admin\ProcessController::class, 'index']);
-    Route::post('/processes', [App\Http\Controllers\Api\Admin\ProcessController::class, 'store']);
-    Route::get('/processes/{id}', [App\Http\Controllers\Api\Admin\ProcessController::class, 'show']);
-    Route::put('/processes/{id}', [App\Http\Controllers\Api\Admin\ProcessController::class, 'update']);
-    Route::delete('/processes/{id}', [App\Http\Controllers\Api\Admin\ProcessController::class, 'destroy']);
+    // CRUD Processos BÁSICO
+    Route::get('/processes', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'index']);
+    Route::post('/processes', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'store']);
+    Route::get('/processes/{id}', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'show']);
+    Route::put('/processes/{id}', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'update']);
+    Route::delete('/processes/{id}', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'destroy']);
     
-    // Sincronização CNJ
-    Route::post('/processes/{id}/sync-cnj', [App\Http\Controllers\Api\Admin\ProcessController::class, 'syncWithCNJ']);
+    // Rotas auxiliares BÁSICAS
+    Route::get('/processes/{id}/movements', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'getMovements']);
+    Route::get('/processes/{id}/documents', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'getDocuments']);
+    Route::get('/processes/{id}/appointments', [App\Http\Controllers\Api\Admin\Processes\ProcessController::class, 'getAppointments']);
+});
+
+// ==========================================
+// INTEGRAÇÕES - ROTAS SEPARADAS
+// ==========================================
+Route::middleware(['auth:api'])->prefix('admin/integrations')->group(function () {
     
-    // Rotas auxiliares para processos
-    Route::get('/processes/{id}/movements', [App\Http\Controllers\Api\Admin\ProcessController::class, 'getMovements']);
-    Route::post('/processes/{id}/movements', [App\Http\Controllers\Api\Admin\ProcessController::class, 'addMovement']);
-    Route::get('/processes/{id}/documents', [App\Http\Controllers\Api\Admin\ProcessController::class, 'getDocuments']);
-    Route::get('/processes/{id}/appointments', [App\Http\Controllers\Api\Admin\ProcessController::class, 'getAppointments']);
+    // CNJ - Integração separada
+    Route::prefix('cnj')->group(function() {
+        Route::get('/status', [App\Http\Controllers\Api\Admin\Integrations\CNJ\CNJController::class, 'status']);
+        Route::post('/sync-process/{id}', [App\Http\Controllers\Api\Admin\Integrations\CNJ\CNJController::class, 'syncProcess']);
+        Route::get('/sync-history', [App\Http\Controllers\Api\Admin\Integrations\CNJ\CNJController::class, 'syncHistory']);
+        Route::post('/configure', [App\Http\Controllers\Api\Admin\Integrations\CNJ\CNJController::class, 'configure']);
+    });
+    
+    // Outras integrações futuras
+    Route::prefix('escavador')->group(function() {
+        Route::get('/status', function() {
+            return response()->json(['success' => true, 'message' => 'Escavador não implementado']);
+        });
+    });
+    
+    Route::prefix('jurisbrasil')->group(function() {
+        Route::get('/status', function() {
+            return response()->json(['success' => true, 'message' => 'Jurisbrasil não implementado']);
+        });
+    });
+});
+
+// Rota para listar todas as integrações
+Route::middleware(['auth:api'])->prefix('admin')->group(function () {
+    Route::get('/integrations', [App\Http\Controllers\Api\Admin\IntegrationController::class, 'index']);
+    Route::put('/integrations/{id}', [App\Http\Controllers\Api\Admin\IntegrationController::class, 'update']);
 });

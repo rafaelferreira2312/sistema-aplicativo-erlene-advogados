@@ -1,0 +1,112 @@
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+// Função para obter token do localStorage
+const getAuthToken = () => {
+  // Tentar diferentes chaves de token que podem existir
+  const possibleKeys = ['token', 'auth_token', 'access_token', 'jwt_token', 'erlene_token'];
+  
+  for (const key of possibleKeys) {
+    const token = localStorage.getItem(key);
+    if (token) {
+      console.log(`Token encontrado na chave: ${key}`);
+      return token;
+    }
+  }
+  
+  console.log('Nenhum token encontrado no localStorage');
+  return null;
+};
+
+export const apiRequest = async (endpoint, options = {}) => {
+  try {
+    const token = getAuthToken();
+    
+    const config = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(options.headers || {})
+      },
+      ...options
+    };
+
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('🌐 API Request:', { url, method: config.method, hasToken: !!token });
+
+    const response = await fetch(url, config);
+    
+    console.log('📡 API Response Status:', response.status);
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.error('❌ Erro 401: Token inválido ou expirado');
+        // Limpar tokens inválidos
+        localStorage.clear();
+        throw new Error('Token inválido. Faça login novamente.');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ API Response Data:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('💥 API Request Error:', error);
+    throw error;
+  }
+};
+
+// Função para testar conexão da API
+export const testApiConnection = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ API Health Check:', data);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('❌ API Health Check Failed:', error);
+    return false;
+  }
+};
+
+// Função para fazer login e obter token
+export const loginForToken = async () => {
+  try {
+    console.log('🔐 Tentando login automático para obter token...');
+    
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        email: 'admin@erlene.com',
+        password: '123456'
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.token || data.access_token) {
+        const token = data.token || data.access_token;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(data.user || {}));
+        console.log('✅ Login automático realizado, token salvo');
+        return token;
+      }
+    } else {
+      console.log('❌ Login automático falhou:', response.status);
+    }
+    return null;
+  } catch (error) {
+    console.error('💥 Erro no login automático:', error);
+    return null;
+  }
+};
