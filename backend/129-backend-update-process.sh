@@ -1,3 +1,57 @@
+#!/bin/bash
+
+# Script 129 - Implementar método update no ProcessController
+# Sistema Erlene Advogados - Corrigir erro 501 Not Implemented no backend
+# EXECUTAR DENTRO DA PASTA: backend/
+
+echo "🔧 Script 129 - Implementando método update no ProcessController..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "artisan" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta backend/"
+    echo "📁 Comando correto:"
+    echo "   cd backend"
+    echo "   chmod +x 129-backend-update-process.sh && ./129-backend-update-process.sh"
+    exit 1
+fi
+
+echo "1️⃣ DIAGNÓSTICO DO PROBLEMA:"
+echo "   • Frontend enviando PUT /admin/processes/2"
+echo "   • Backend retornando 501 Not Implemented"
+echo "   • Método update() não implementado no ProcessController"
+echo "   • Solução: implementar método update completo"
+
+echo ""
+echo "2️⃣ Localizando ProcessController..."
+
+# Encontrar o ProcessController
+CONTROLLER_PATH=""
+if [ -f "app/Http/Controllers/Api/Admin/Processes/ProcessController.php" ]; then
+    CONTROLLER_PATH="app/Http/Controllers/Api/Admin/Processes/ProcessController.php"
+elif [ -f "app/Http/Controllers/Api/Admin/ProcessController.php" ]; then
+    CONTROLLER_PATH="app/Http/Controllers/Api/Admin/ProcessController.php"
+elif [ -f "app/Http/Controllers/ProcessController.php" ]; then
+    CONTROLLER_PATH="app/Http/Controllers/ProcessController.php"
+else
+    echo "❌ ProcessController não encontrado!"
+    echo "Procurando em todas as pastas..."
+    find app -name "*ProcessController.php" -type f
+    exit 1
+fi
+
+echo "✅ ProcessController encontrado: $CONTROLLER_PATH"
+
+echo ""
+echo "3️⃣ Fazendo backup do ProcessController atual..."
+
+# Backup do controller atual
+cp "$CONTROLLER_PATH" "$CONTROLLER_PATH.backup.$(date +%Y%m%d_%H%M%S)"
+echo "✅ Backup criado"
+
+echo ""
+echo "4️⃣ Implementando método update completo..."
+
+cat > "$CONTROLLER_PATH" << 'EOF'
 <?php
 
 namespace App\Http\Controllers\Api\Admin\Processes;
@@ -352,3 +406,79 @@ class ProcessController extends Controller
         }
     }
 }
+EOF
+
+echo "5️⃣ Verificando se as rotas estão configuradas..."
+
+# Verificar routes/api.php
+if [ -f "routes/api.php" ]; then
+    echo "✅ Verificando rotas em routes/api.php..."
+    
+    if ! grep -q "processes.*update\|processes.*put" routes/api.php; then
+        echo "⚠️ Adicionando rotas PUT e DELETE para processos..."
+        
+        # Backup do routes/api.php
+        cp routes/api.php routes/api.php.backup.$(date +%Y%m%d_%H%M%S)
+        
+        # Adicionar rotas se não existirem
+        if grep -q "Route::get.*processes" routes/api.php; then
+            # Substituir linha de GET por resource completo
+            sed -i '/Route::get.*processes/c\
+            Route::apiResource("processes", Processes\\ProcessController::class);' routes/api.php
+        else
+            # Adicionar nova linha de resource
+            echo "            Route::apiResource('processes', Processes\\ProcessController::class);" >> routes/api.php
+        fi
+        
+        echo "✅ Rotas adicionadas"
+    else
+        echo "✅ Rotas já configuradas"
+    fi
+else
+    echo "❌ Arquivo routes/api.php não encontrado"
+fi
+
+echo ""
+echo "6️⃣ Testando a estrutura do controller..."
+
+# Verificar se método update foi implementado
+if grep -q "public function update" "$CONTROLLER_PATH"; then
+    echo "✅ Método update() implementado"
+else
+    echo "❌ Erro: método update() não encontrado"
+    exit 1
+fi
+
+# Verificar se todos os métodos necessários existem
+for method in "index" "show" "store" "update" "destroy"; do
+    if grep -q "public function $method" "$CONTROLLER_PATH"; then
+        echo "✅ Método $method() implementado"
+    else
+        echo "❌ Método $method() faltando"
+    fi
+done
+
+echo ""
+echo "✅ SCRIPT 129 CONCLUÍDO COM SUCESSO!"
+echo ""
+echo "🔧 O QUE FOI IMPLEMENTADO:"
+echo "   ✅ Método update() completo no ProcessController"
+echo "   ✅ Validações de dados baseadas na tabela processos"
+echo "   ✅ Logs detalhados para debug"
+echo "   ✅ Tratamento de erros robusto"
+echo "   ✅ Transações de banco de dados"
+echo "   ✅ Carregamento de relacionamentos (cliente, advogado)"
+echo "   ✅ Rotas apiResource configuradas"
+echo ""
+echo "🚀 MÉTODOS IMPLEMENTADOS:"
+echo "   ✅ GET /admin/processes (index) - listar"
+echo "   ✅ GET /admin/processes/{id} (show) - obter específico"
+echo "   ✅ POST /admin/processes (store) - criar"
+echo "   ✅ PUT /admin/processes/{id} (update) - atualizar"
+echo "   ✅ DELETE /admin/processes/{id} (destroy) - excluir"
+echo ""
+echo "🧪 TESTE AGORA:"
+echo "   1. php artisan config:clear"
+echo "   2. php artisan route:clear"
+echo "   3. Teste a edição de processo no frontend"
+echo "   4. Verifique os logs: storage/logs/laravel.log"
