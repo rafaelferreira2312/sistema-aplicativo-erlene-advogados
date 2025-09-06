@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\Admin\AudienciaController;
 
 // Login (público)
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -108,18 +107,4 @@ Route::middleware(['auth:api'])->prefix('admin/integrations')->group(function ()
 Route::middleware(['auth:api'])->prefix('admin')->group(function () {
     Route::get('/integrations', [App\Http\Controllers\Api\Admin\IntegrationController::class, 'index']);
     Route::put('/integrations/{id}', [App\Http\Controllers\Api\Admin\IntegrationController::class, 'update']);
-});
-
-// ==========================================
-// AUDIÊNCIAS - NOVAS ROTAS ADICIONADAS
-// ==========================================
-Route::middleware(['auth:api'])->prefix('admin')->group(function () {
-    
-    // CRUD Audiências
-    Route::apiResource('audiencias', AudienciaController::class);
-    
-    // Rotas específicas de audiências
-    Route::get('audiencias/dashboard/stats', [AudienciaController::class, 'dashboardStats']);
-    Route::get('audiencias/filters/hoje', [AudienciaController::class, 'hoje']);
-    Route::get('audiencias/filters/proximas', [AudienciaController::class, 'proximas']);
 });
