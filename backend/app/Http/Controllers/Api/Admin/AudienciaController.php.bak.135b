@@ -1,28 +1,3 @@
-#!/bin/bash
-
-# Script 129 - Criar AudienciaController e Rotas API
-# Sistema Erlene Advogados - Controller de Audiências
-# Data: $(date +%Y-%m-%d)
-# EXECUTE DENTRO DA PASTA: backend/
-
-echo "🎯 Script 129 - Criando AudienciaController e rotas API..."
-
-# Verificar se estamos no diretório correto
-if [ ! -f "artisan" ]; then
-    echo "❌ Erro: Execute este script dentro da pasta backend/"
-    echo "📁 Comando correto:"
-    echo "   cd backend"
-    echo "   chmod +x 129-create-audiencias-controller.sh && ./129-create-audiencias-controller.sh"
-    exit 1
-fi
-
-echo "1️⃣ Criando AudienciaController..."
-
-# Criar controller na estrutura API Admin
-mkdir -p app/Http/Controllers/Api/Admin
-
-# Criar AudienciaController
-cat > app/Http/Controllers/Api/Admin/AudienciaController.php << 'EOF'
 <?php
 
 namespace App\Http\Controllers\Api\Admin;
@@ -70,16 +45,38 @@ class AudienciaController extends Controller
                 $query->where('cliente_id', $request->cliente_id);
             }
 
-            // Ordenação
+            // Ordenação padrão: próximas audiências primeiro
             $query->orderBy('data', 'asc')->orderBy('hora', 'asc');
 
             // Paginação
             $perPage = $request->get('per_page', 15);
             $audiencias = $query->paginate($perPage);
 
+            // Formatar dados para o frontend
+            $audienciasFormatadas = $audiencias->getCollection()->map(function ($audiencia) {
+                return [
+                    'id' => $audiencia->id,
+                    'processo' => $audiencia->processo->numero ?? 'N/A',
+                    'cliente' => $audiencia->cliente->nome ?? 'N/A',
+                    'tipo' => $audiencia->tipo_formatado,
+                    'data' => $audiencia->data_formatada,
+                    'hora' => $audiencia->hora_formatada,
+                    'local' => $audiencia->local,
+                    'endereco' => $audiencia->endereco,
+                    'sala' => $audiencia->sala,
+                    'status' => $audiencia->status,
+                    'status_formatado' => $audiencia->status_formatado,
+                    'advogado' => $audiencia->advogado,
+                    'juiz' => $audiencia->juiz,
+                    'observacoes' => $audiencia->observacoes,
+                    'lembrete' => $audiencia->lembrete,
+                    'horas_lembrete' => $audiencia->horas_lembrete
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $audiencias->items(),
+                'data' => $audienciasFormatadas,
                 'pagination' => [
                     'current_page' => $audiencias->currentPage(),
                     'last_page' => $audiencias->lastPage(),
@@ -147,9 +144,22 @@ class AudienciaController extends Controller
                                   ->orderBy('hora', 'asc')
                                   ->get();
 
+            $audienciasFormatadas = $audiencias->map(function ($audiencia) {
+                return [
+                    'id' => $audiencia->id,
+                    'processo' => $audiencia->processo->numero ?? 'N/A',
+                    'cliente' => $audiencia->cliente->nome ?? 'N/A',
+                    'tipo' => $audiencia->tipo_formatado,
+                    'hora' => $audiencia->hora_formatada,
+                    'local' => $audiencia->local,
+                    'status' => $audiencia->status_formatado,
+                    'advogado' => $audiencia->advogado
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $audiencias
+                'data' => $audienciasFormatadas
             ]);
 
         } catch (Exception $e) {
@@ -174,9 +184,21 @@ class AudienciaController extends Controller
                                   ->orderBy('hora', 'asc')
                                   ->get();
 
+            $audienciasFormatadas = $audiencias->map(function ($audiencia) {
+                return [
+                    'id' => $audiencia->id,
+                    'processo' => $audiencia->processo->numero ?? 'N/A',
+                    'cliente' => $audiencia->cliente->nome ?? 'N/A',
+                    'tipo' => $audiencia->tipo_formatado,
+                    'hora' => $audiencia->hora_formatada,
+                    'local' => $audiencia->local,
+                    'status' => $audiencia->status_formatado
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $audiencias
+                'data' => $audienciasFormatadas
             ]);
 
         } catch (Exception $e) {
@@ -197,9 +219,36 @@ class AudienciaController extends Controller
             $audiencia = Audiencia::with(['processo', 'cliente', 'advogadoResponsavel', 'unidade'])
                                  ->findOrFail($id);
 
+            $audienciaFormatada = [
+                'id' => $audiencia->id,
+                'processo_id' => $audiencia->processo_id,
+                'processo' => $audiencia->processo->numero ?? 'N/A',
+                'cliente_id' => $audiencia->cliente_id,
+                'cliente' => $audiencia->cliente->nome ?? 'N/A',
+                'advogado_id' => $audiencia->advogado_id,
+                'unidade_id' => $audiencia->unidade_id,
+                'tipo' => $audiencia->tipo,
+                'tipo_formatado' => $audiencia->tipo_formatado,
+                'data' => $audiencia->data->format('Y-m-d'),
+                'data_formatada' => $audiencia->data_formatada,
+                'hora' => $audiencia->hora_formatada,
+                'local' => $audiencia->local,
+                'endereco' => $audiencia->endereco,
+                'sala' => $audiencia->sala,
+                'advogado' => $audiencia->advogado,
+                'juiz' => $audiencia->juiz,
+                'status' => $audiencia->status,
+                'status_formatado' => $audiencia->status_formatado,
+                'observacoes' => $audiencia->observacoes,
+                'lembrete' => $audiencia->lembrete,
+                'horas_lembrete' => $audiencia->horas_lembrete,
+                'created_at' => $audiencia->created_at,
+                'updated_at' => $audiencia->updated_at
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => $audiencia
+                'data' => $audienciaFormatada
             ]);
 
         } catch (Exception $e) {
@@ -382,94 +431,3 @@ class AudienciaController extends Controller
         }
     }
 }
-EOF
-
-echo "2️⃣ Atualizando rotas API para incluir audiências..."
-
-# Fazer backup das rotas atuais
-cp routes/api.php routes/api.php.bak.129
-
-# Atualizar routes/api.php
-cat > routes/api.php << 'EOF'
-<?php
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\Admin\ClienteController;
-use App\Http\Controllers\Api\Admin\ProcessoController;
-use App\Http\Controllers\Api\Admin\AudienciaController;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes - Sistema Erlene Advogados
-|--------------------------------------------------------------------------
-*/
-
-// Rotas de autenticação (públicas)
-Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/portal/login', [AuthController::class, 'portalLogin']);
-    
-    // Rotas protegidas por JWT
-    Route::middleware('auth:api')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::get('/me', [AuthController::class, 'me']);
-    });
-});
-
-// Rotas administrativas protegidas
-Route::prefix('admin')->middleware('auth:api')->group(function () {
-    
-    // Clientes
-    Route::apiResource('clientes', ClienteController::class);
-    
-    // Processos
-    Route::apiResource('processos', ProcessoController::class);
-    
-    // Audiências
-    Route::apiResource('audiencias', AudienciaController::class);
-    Route::get('audiencias/dashboard/stats', [AudienciaController::class, 'dashboardStats']);
-    Route::get('audiencias/filters/hoje', [AudienciaController::class, 'hoje']);
-    Route::get('audiencias/filters/proximas', [AudienciaController::class, 'proximas']);
-});
-
-// Rotas de teste e saúde
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'timestamp' => now(),
-        'environment' => app()->environment()
-    ]);
-});
-
-Route::get('/test', function () {
-    return response()->json([
-        'message' => 'API funcionando!',
-        'timestamp' => now()
-    ]);
-});
-EOF
-
-echo "3️⃣ Executando migration da tabela audiências..."
-
-# Executar migration
-php artisan migrate
-
-echo "✅ AudienciaController criado com sucesso!"
-echo "✅ Rotas API configuradas!"
-echo "✅ Migration executada!"
-echo ""
-echo "📋 Endpoints criados:"
-echo "   GET    /api/admin/audiencias - Listar audiências"
-echo "   POST   /api/admin/audiencias - Criar audiência"
-echo "   GET    /api/admin/audiencias/{id} - Exibir audiência"
-echo "   PUT    /api/admin/audiencias/{id} - Atualizar audiência"
-echo "   DELETE /api/admin/audiencias/{id} - Excluir audiência"
-echo "   GET    /api/admin/audiencias/dashboard/stats - Estatísticas"
-echo "   GET    /api/admin/audiencias/filters/hoje - Audiências de hoje"
-echo "   GET    /api/admin/audiencias/filters/proximas - Próximas audiências"
-echo ""
-echo "📋 Próximo passo: Execute o script 130 para integração frontend"
-echo "   chmod +x 130-integrate-frontend-audiencias.sh && ./130-integrate-frontend-audiencias.sh"

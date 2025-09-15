@@ -111,15 +111,15 @@ Route::middleware(['auth:api'])->prefix('admin')->group(function () {
 });
 
 // ==========================================
-// AUDIÊNCIAS - ROTAS CORRIGIDAS (ORDEM CRÍTICA!)
+// AUDIÊNCIAS - NOVAS ROTAS ADICIONADAS
 // ==========================================
 Route::middleware(['auth:api'])->prefix('admin')->group(function () {
     
-    // 🚨 CRÍTICO: Rotas específicas ANTES do apiResource
+    // CRUD Audiências
+    Route::apiResource('audiencias', AudienciaController::class);
+    
+    // Rotas específicas de audiências
     Route::get('audiencias/dashboard/stats', [AudienciaController::class, 'dashboardStats']);
     Route::get('audiencias/filters/hoje', [AudienciaController::class, 'hoje']);
     Route::get('audiencias/filters/proximas', [AudienciaController::class, 'proximas']);
-    
-    // CRUD Audiências - DEPOIS das rotas específicas
-    Route::apiResource('audiencias', AudienciaController::class);
 });
