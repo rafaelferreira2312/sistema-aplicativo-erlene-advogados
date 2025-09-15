@@ -204,26 +204,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-
-        {/* Credenciais Demo */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-blue-900 mb-4 text-center">
-            Credenciais para Demonstração
-          </h3>
-          <div className="space-y-3 text-sm text-blue-800">
-            <div className="bg-white p-3 rounded-lg">
-              <div className="font-medium text-blue-900">Admin Geral</div>
-              <div className="text-blue-700">admin@erlene.com</div>
-              <div className="text-blue-600">Senha: 123456</div>
-            </div>
-            <div className="bg-white p-3 rounded-lg">
-              <div className="font-medium text-blue-900">Cliente Portal</div>
-              <div className="text-blue-700">cliente@teste.com</div>
-              <div className="text-blue-600">Senha: 123456</div>
-            </div>
-          </div>
-        </div>
-
+        
         {/* Footer */}
         <div className="text-center text-sm text-gray-500 space-y-2">
           <p>© 2024 Erlene Chaves Silva Advogados Associados</p>

@@ -21,20 +21,6 @@ import AudienciaTimelineModal from '../../components/audiencias/AudienciaTimelin
 import audienciasService from '../../services/audienciasService';
 
 const Audiencias = () => {
-
-  const formatarDataDaAPI = (dataString) => {
-    if (!dataString) return "";
-    // Se já está no formato correto (YYYY-MM-DD), usar diretamente
-    if (dataString.length === 10 && dataString.includes("-")) {
-      return dataString;
-    }
-    // Se está no formato ISO (com T), extrair apenas a data
-    if (dataString.includes("T")) {
-      return dataString.split("T")[0];
-    }
-    return dataString;
-  };
-
   const [audiencias, setAudiencias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,7 +80,7 @@ const Audiencias = () => {
     setLoading(true);
     
     try {
-      console.log('📄 Carregando dados das audiências...');
+      console.log('🔄 Carregando dados das audiências...');
       
       // Carregar estatísticas
       const resultadoStats = await audienciasService.obterEstatisticas();
@@ -120,36 +106,22 @@ const Audiencias = () => {
       const resultadoLista = await audienciasService.listarAudiencias();
       if (resultadoLista.success) {
         // Converter dados da API para formato do frontend
-        const audienciasFormatadas = resultadoLista.audiencias.map(audiencia => {
-          // Extrair apenas a data (YYYY-MM-DD) do formato ISO completo
-          let dataFormatada = audiencia.data;
-          if (typeof dataFormatada === 'string' && dataFormatada.includes('T')) {
-            dataFormatada = dataFormatada.split('T')[0];
-          }
-          
-          // Extrair apenas HH:MM da hora se vier com segundos
-          let horaFormatada = audiencia.hora;
-          if (typeof horaFormatada === 'string' && horaFormatada.length > 5) {
-            horaFormatada = horaFormatada.substring(0, 5);
-          }
-          
-          return {
-            id: audiencia.id,
-            processo: audiencia.processo?.numero || `Processo #${audiencia.processo_id}`,
-            cliente: audiencia.cliente?.nome || `Cliente #${audiencia.cliente_id}`,
-            tipo: formatarTipo(audiencia.tipo),
-            data: dataFormatada,
-            hora: horaFormatada,
-            local: audiencia.local,
-            endereco: audiencia.endereco || '',
-            sala: audiencia.sala || '',
-            status: formatarStatus(audiencia.status),
-            advogado: audiencia.advogado,
-            juiz: audiencia.juiz || '',
-            observacoes: audiencia.observacoes || '',
-            createdAt: audiencia.created_at
-          };
-        });
+        const audienciasFormatadas = resultadoLista.audiencias.map(audiencia => ({
+          id: audiencia.id,
+          processo: audiencia.processo?.numero || `Processo #${audiencia.processo_id}`,
+          cliente: audiencia.cliente?.nome || `Cliente #${audiencia.cliente_id}`,
+          tipo: formatarTipo(audiencia.tipo),
+          data: audiencia.data,
+          hora: audiencia.hora,
+          local: audiencia.local,
+          endereco: audiencia.endereco || '',
+          sala: audiencia.sala || '',
+          status: formatarStatus(audiencia.status),
+          advogado: audiencia.advogado,
+          juiz: audiencia.juiz || '',
+          observacoes: audiencia.observacoes || '',
+          createdAt: audiencia.created_at
+        }));
         
         setAudiencias(audienciasFormatadas);
         console.log('📋 Audiências carregadas:', audienciasFormatadas);

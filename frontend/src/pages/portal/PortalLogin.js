@@ -164,18 +164,7 @@ const PortalLogin = () => {
             </div>
           </div>
         </div>
-
-        {/* Credenciais */}
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-green-900 mb-4 text-center">
-            Teste com Cliente Demo
-          </h3>
-          <div className="bg-white p-3 rounded-lg text-sm text-green-800">
-            <div className="font-medium text-green-900">Cliente Teste</div>
-            <div className="text-green-700">cliente@teste.com</div>
-            <div className="text-green-600">Senha: 123456</div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

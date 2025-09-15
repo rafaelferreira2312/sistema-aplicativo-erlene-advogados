@@ -1,3 +1,40 @@
+#!/bin/bash
+
+# Script 135d - Integrar Componentes Frontend com API Real
+# Sistema Erlene Advogados - Remover mocks e conectar com backend
+# Data: $(date +%Y-%m-%d)
+# EXECUTE DENTRO DA PASTA: frontend/
+
+echo "🔗 Script 135d - Integrando componentes frontend com API real..."
+
+# Verificar se estamos no diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    echo "📝 Comando correto:"
+    echo "   cd frontend"
+    echo "   chmod +x 135d-integrate-frontend-components.sh && ./135d-integrate-frontend-components.sh"
+    exit 1
+fi
+
+echo "1️⃣ Fazendo backup dos componentes atuais..."
+
+# Fazer backup
+if [ -f "src/pages/admin/Audiencias.js" ]; then
+    cp "src/pages/admin/Audiencias.js" "src/pages/admin/Audiencias.js.bak.135d"
+fi
+
+if [ -f "src/components/audiencias/NewAudiencia.js" ]; then
+    cp "src/components/audiencias/NewAudiencia.js" "src/components/audiencias/NewAudiencia.js.bak.135d"
+fi
+
+if [ -f "src/components/audiencias/EditAudiencia.js" ]; then
+    cp "src/components/audiencias/EditAudiencia.js" "src/components/audiencias/EditAudiencia.js.bak.135d"
+fi
+
+echo "2️⃣ Atualizando Audiencias.js - removendo dados mockados..."
+
+# Atualizar página principal conectando com API real
+cat > src/pages/admin/Audiencias.js << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -21,20 +58,6 @@ import AudienciaTimelineModal from '../../components/audiencias/AudienciaTimelin
 import audienciasService from '../../services/audienciasService';
 
 const Audiencias = () => {
-
-  const formatarDataDaAPI = (dataString) => {
-    if (!dataString) return "";
-    // Se já está no formato correto (YYYY-MM-DD), usar diretamente
-    if (dataString.length === 10 && dataString.includes("-")) {
-      return dataString;
-    }
-    // Se está no formato ISO (com T), extrair apenas a data
-    if (dataString.includes("T")) {
-      return dataString.split("T")[0];
-    }
-    return dataString;
-  };
-
   const [audiencias, setAudiencias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,7 +117,7 @@ const Audiencias = () => {
     setLoading(true);
     
     try {
-      console.log('📄 Carregando dados das audiências...');
+      console.log('🔄 Carregando dados das audiências...');
       
       // Carregar estatísticas
       const resultadoStats = await audienciasService.obterEstatisticas();
@@ -120,36 +143,22 @@ const Audiencias = () => {
       const resultadoLista = await audienciasService.listarAudiencias();
       if (resultadoLista.success) {
         // Converter dados da API para formato do frontend
-        const audienciasFormatadas = resultadoLista.audiencias.map(audiencia => {
-          // Extrair apenas a data (YYYY-MM-DD) do formato ISO completo
-          let dataFormatada = audiencia.data;
-          if (typeof dataFormatada === 'string' && dataFormatada.includes('T')) {
-            dataFormatada = dataFormatada.split('T')[0];
-          }
-          
-          // Extrair apenas HH:MM da hora se vier com segundos
-          let horaFormatada = audiencia.hora;
-          if (typeof horaFormatada === 'string' && horaFormatada.length > 5) {
-            horaFormatada = horaFormatada.substring(0, 5);
-          }
-          
-          return {
-            id: audiencia.id,
-            processo: audiencia.processo?.numero || `Processo #${audiencia.processo_id}`,
-            cliente: audiencia.cliente?.nome || `Cliente #${audiencia.cliente_id}`,
-            tipo: formatarTipo(audiencia.tipo),
-            data: dataFormatada,
-            hora: horaFormatada,
-            local: audiencia.local,
-            endereco: audiencia.endereco || '',
-            sala: audiencia.sala || '',
-            status: formatarStatus(audiencia.status),
-            advogado: audiencia.advogado,
-            juiz: audiencia.juiz || '',
-            observacoes: audiencia.observacoes || '',
-            createdAt: audiencia.created_at
-          };
-        });
+        const audienciasFormatadas = resultadoLista.audiencias.map(audiencia => ({
+          id: audiencia.id,
+          processo: audiencia.processo?.numero || `Processo #${audiencia.processo_id}`,
+          cliente: audiencia.cliente?.nome || `Cliente #${audiencia.cliente_id}`,
+          tipo: formatarTipo(audiencia.tipo),
+          data: audiencia.data,
+          hora: audiencia.hora,
+          local: audiencia.local,
+          endereco: audiencia.endereco || '',
+          sala: audiencia.sala || '',
+          status: formatarStatus(audiencia.status),
+          advogado: audiencia.advogado,
+          juiz: audiencia.juiz || '',
+          observacoes: audiencia.observacoes || '',
+          createdAt: audiencia.created_at
+        }));
         
         setAudiencias(audienciasFormatadas);
         console.log('📋 Audiências carregadas:', audienciasFormatadas);
@@ -542,3 +551,12 @@ const Audiencias = () => {
 };
 
 export default Audiencias;
+EOF
+
+echo "✅ Audiencias.js atualizado com API real!"
+
+echo "📋 Script 135d primeira parte concluída!"
+echo "📋 Próxima parte: Atualizar formulários NewAudiencia e EditAudiencia"
+echo ""
+echo "📋 Para continuar:"
+echo "   digite 'continuar' para atualizar os formulários"
