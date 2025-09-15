@@ -274,37 +274,13 @@ const Audiencias = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      // Se vier no formato ISO, extrair apenas a data
-      let cleanDate = dateString;
-      if (typeof dateString === 'string' && dateString.includes('T')) {
-        cleanDate = dateString.split('T')[0];
-      }
-      
-      // Converter para Date e formatar
-      const date = new Date(cleanDate + 'T00:00:00.000Z');
-      return date.toLocaleDateString('pt-BR');
-    } catch (e) {
-      console.error('Erro ao formatar data:', dateString, e);
-      return 'Data inválida';
-    }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
   };
 
   const isToday = (dateString) => {
-    if (!dateString) return false;
-    try {
-      // Extrair apenas a data se vier no formato ISO
-      let cleanDate = dateString;
-      if (typeof dateString === 'string' && dateString.includes('T')) {
-        cleanDate = dateString.split('T')[0];
-      }
-      
-      const hoje = new Date().toISOString().split('T')[0];
-      return cleanDate === hoje;
-    } catch (e) {
-      return false;
-    }
+    const hoje = new Date().toISOString().split('T')[0];
+    return dateString === hoje;
   };
 
   if (loading) {
