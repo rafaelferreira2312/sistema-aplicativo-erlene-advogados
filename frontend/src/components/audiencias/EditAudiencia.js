@@ -46,12 +46,66 @@ const EditAudiencia = () => {
   };
 
   useEffect(() => { const carregarDados = async () => {
-    // Simular carregamento dos dados
-    const resultado = await audienciasService.obterAudiencia(id); if (resultado.success) {
-      setFormData({ tipo: resultado.audiencia.tipo || "", data: resultado.audiencia.data ? resultado.audiencia.data.split("T")[0] : "", hora: resultado.audiencia.hora ? resultado.audiencia.hora.substring(0, 5) : "", local: resultado.audiencia.local || "", sala: resultado.audiencia.sala || "", endereco: resultado.audiencia.endereco || "", advogado: resultado.audiencia.advogado || "", juiz: resultado.audiencia.juiz || "", status: resultado.audiencia.status || "agendada", observacoes: resultado.audiencia.observacoes || "" });
-      setLoadingData(false);
+    if (!id) {
+      console.error('ID da audiência não fornecido');
+      navigate('/admin/audiencias');
+      return;
     }
-  }; carregarDados(); }, [id]);
+
+    setLoadingData(true);
+    
+    try {
+      console.log('Carregando audiência com ID:', id);
+      const resultado = await audienciasService.obterAudiencia(id);
+      
+      if (resultado.success && resultado.audiencia) {
+        const audiencia = resultado.audiencia;
+        console.log('✅ Audiência carregada para edição:', audiencia);
+        console.log('IDs preservados - processo_id:', audiencia.processo_id, 'cliente_id:', audiencia.cliente_id);
+        
+        // Mapear tipos do banco para tipos do formulário
+        const tiposDisplay = {
+          'conciliacao': 'Audiência de Conciliação',
+          'instrucao': 'Audiência de Instrução e Julgamento', 
+          'preliminar': 'Audiência Preliminar',
+          'julgamento': 'Audiência de Instrução e Julgamento'
+        };
+
+        // Mapear status do banco para status do formulário  
+        const statusDisplay = {
+          'agendada': 'Agendada',
+          'confirmada': 'Confirmada',
+          'em_andamento': 'Em andamento', 
+          'realizada': 'Concluída',
+          'cancelada': 'Cancelada',
+          'adiada': 'Adiada'
+        };
+        
+        setFormData({
+          tipo: tiposDisplay[audiencia.tipo] || audiencia.tipo || '',
+          data: audiencia.data ? audiencia.data.split('T')[0] : '',
+          hora: audiencia.hora ? audiencia.hora.substring(0, 5) : '',
+          local: audiencia.local || '',
+          sala: audiencia.sala || '',
+          endereco: audiencia.endereco || '',
+          advogado: audiencia.advogado || '',
+          juiz: audiencia.juiz || '',
+          status: statusDisplay[audiencia.status] || audiencia.status || 'Agendada',
+          observacoes: audiencia.observacoes || ''
+        });
+        
+        setLoadingData(false);
+      } else {
+        console.error('❌ Erro ao carregar audiência:', resultado.error);
+        alert('Erro ao carregar audiência: ' + (resultado.error || 'Audiência não encontrada'));
+        navigate('/admin/audiencias');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar audiência:', error);
+      alert('Erro ao carregar dados da audiência: ' + error.message);
+      navigate('/admin/audiencias');
+    }
+  }; carregarDados(); }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -90,13 +144,42 @@ const EditAudiencia = () => {
     setLoading(true);
     
     try {
-      // Simular salvamento
-      const resultado = await audienciasService.atualizarAudiencia(id, audienciasService.formatarDadosParaAPI(formData)); if (!resultado.success) throw new Error(resultado.error);
+      // ✅ CORRETO: Manter processo_id e cliente_id originais da audiência
+      // Não usar ID da URL como processo_id!
       
-      alert('Audiência atualizada com sucesso!');
-      navigate('/admin/audiencias');
+      console.log('Dados do formulário:', formData);
+      console.log('ID da audiência sendo editada:', id);
+      
+      // Buscar dados atuais da audiência para preservar IDs
+      const audienciaAtual = await audienciasService.obterAudiencia(id);
+      
+      if (!audienciaAtual.success) {
+        throw new Error('Não foi possível carregar dados da audiência');
+      }
+      
+      // Preservar IDs originais e atualizar apenas campos editáveis
+      const dadosCompletos = {
+        ...formData,
+        // ✅ Preservar IDs originais (não alteráveis)
+        processoId: audienciaAtual.audiencia.processo_id,
+        clienteId: audienciaAtual.audiencia.cliente_id,
+        advogadoId: audienciaAtual.audiencia.advogado_id
+      };
+      
+      console.log('Dados completos para atualização:', dadosCompletos);
+      
+      const resultado = await audienciasService.atualizarAudiencia(id, audienciasService.formatarDadosParaAPI(dadosCompletos)); 
+      
+      if (resultado.success) {
+        alert('Audiência atualizada com sucesso!');
+        navigate('/admin/audiencias');
+      } else {
+        console.error('Erro na atualização:', resultado);
+        alert('Erro ao atualizar audiência: ' + (resultado.error || 'Erro desconhecido'));
+      }
     } catch (error) {
-      alert('Erro ao atualizar audiência');
+      console.error('Erro ao atualizar audiência:', error);
+      alert('Erro inesperado ao atualizar audiência: ' + error.message);
     } finally {
       setLoading(false);
     }

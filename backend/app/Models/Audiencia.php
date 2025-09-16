@@ -2,19 +2,40 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\Carbon;
 
+/**
+ * Model Audiencia
+ * 
+ * @property int $id
+ * @property int $processo_id
+ * @property int $cliente_id
+ * @property int $advogado_id
+ * @property int $unidade_id
+ * @property string $tipo ENUM: conciliacao, instrucao, preliminar, julgamento, outras
+ * @property string $data
+ * @property string $hora
+ * @property string $local
+ * @property string $advogado
+ * @property string|null $endereco
+ * @property string|null $sala
+ * @property string|null $juiz
+ * @property string|null $observacoes
+ * @property string $status ENUM: agendada, confirmada, em_andamento, realizada, cancelada, adiada
+ * @property bool $lembrete
+ * @property int $horas_lembrete
+ */
 class Audiencia extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $table = 'audiencias';
 
     /**
-     * The attributes that are mass assignable.
+     * Campos preenchíveis em massa
      */
     protected $fillable = [
         'processo_id',
@@ -29,29 +50,49 @@ class Audiencia extends Model
         'sala',
         'advogado',
         'juiz',
-        'status',
         'observacoes',
+        'status',
         'lembrete',
-        'horas_lembrete'
+        'horas_lembrete',
     ];
 
     /**
-     * The attributes that should be cast.
+     * Conversões de tipo automáticas
      */
     protected $casts = [
         'data' => 'date',
         'hora' => 'datetime:H:i',
         'lembrete' => 'boolean',
         'horas_lembrete' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
+    ];
+
+    /**
+     * Valores ENUM válidos para tipo
+     */
+    const TIPOS_VALIDOS = [
+        'conciliacao',
+        'instrucao',
+        'preliminar', 
+        'julgamento',
+        'outras'
+    ];
+
+    /**
+     * Valores ENUM válidos para status
+     */
+    const STATUS_VALIDOS = [
+        'agendada',
+        'confirmada',
+        'em_andamento',
+        'realizada',
+        'cancelada',
+        'adiada'
     ];
 
     /**
      * Relacionamento com Processo
      */
-    public function processo()
+    public function processo(): BelongsTo
     {
         return $this->belongsTo(Processo::class);
     }
@@ -59,7 +100,7 @@ class Audiencia extends Model
     /**
      * Relacionamento com Cliente  
      */
-    public function cliente()
+    public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
     }
@@ -67,7 +108,7 @@ class Audiencia extends Model
     /**
      * Relacionamento com Advogado Responsável
      */
-    public function advogadoResponsavel()
+    public function advogado(): BelongsTo
     {
         return $this->belongsTo(User::class, 'advogado_id');
     }
@@ -75,7 +116,7 @@ class Audiencia extends Model
     /**
      * Relacionamento com Unidade
      */
-    public function unidade()
+    public function unidade(): BelongsTo
     {
         return $this->belongsTo(Unidade::class);
     }
@@ -89,16 +130,18 @@ class Audiencia extends Model
     }
 
     /**
-     * Scope para próximas audiências (próximas 2 horas)
+     * Scope para próximas audiências
      */
     public function scopeProximas($query, $horas = 2)
     {
         $agora = Carbon::now();
         $limite = $agora->copy()->addHours($horas);
         
-        return $query->whereDate('data', Carbon::today())
-                    ->whereTime('hora', '>=', $agora->format('H:i:s'))
-                    ->whereTime('hora', '<=', $limite->format('H:i:s'));
+        return $query->where(function($q) use ($agora, $limite) {
+            $q->whereDate('data', $agora->toDateString())
+              ->whereTime('hora', '>=', $agora->toTimeString())
+              ->whereTime('hora', '<=', $limite->toTimeString());
+        });
     }
 
     /**
@@ -106,56 +149,24 @@ class Audiencia extends Model
      */
     public function scopeEmAndamento($query)
     {
-        return $query->where('status', 'confirmada')
-                    ->whereDate('data', Carbon::today());
+        return $query->where('status', 'em_andamento');
     }
 
     /**
-     * Scope para audiências agendadas
+     * Scope para audiências do mês atual
      */
-    public function scopeAgendadas($query)
+    public function scopeMesAtual($query)
     {
-        return $query->where('status', 'agendada');
+        return $query->whereYear('data', Carbon::now()->year)
+                    ->whereMonth('data', Carbon::now()->month);
     }
 
     /**
-     * Scope para filtrar por período
+     * Accessor para formatação da data/hora
      */
-    public function scopePorPeriodo($query, $dataInicio, $dataFim)
+    public function getDataHoraFormatadaAttribute()
     {
-        return $query->whereBetween('data', [$dataInicio, $dataFim]);
-    }
-
-    /**
-     * Scope para filtrar por tipo
-     */
-    public function scopePorTipo($query, $tipo)
-    {
-        return $query->where('tipo', $tipo);
-    }
-
-    /**
-     * Scope para filtrar por status
-     */
-    public function scopePorStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Accessor para data formatada
-     */
-    public function getDataFormatadaAttribute()
-    {
-        return $this->data ? $this->data->format('d/m/Y') : null;
-    }
-
-    /**
-     * Accessor para hora formatada
-     */
-    public function getHoraFormatadaAttribute()
-    {
-        return $this->hora ? Carbon::parse($this->hora)->format('H:i') : null;
+        return Carbon::parse($this->data . ' ' . $this->hora)->format('d/m/Y H:i');
     }
 
     /**
@@ -163,15 +174,16 @@ class Audiencia extends Model
      */
     public function getStatusFormatadoAttribute()
     {
-        $status = [
+        $statusMap = [
             'agendada' => 'Agendada',
-            'confirmada' => 'Confirmada', 
+            'confirmada' => 'Confirmada',
+            'em_andamento' => 'Em Andamento',
             'realizada' => 'Realizada',
             'cancelada' => 'Cancelada',
             'adiada' => 'Adiada'
         ];
 
-        return $status[$this->status] ?? $this->status;
+        return $statusMap[$this->status] ?? $this->status;
     }
 
     /**
@@ -179,37 +191,14 @@ class Audiencia extends Model
      */
     public function getTipoFormatadoAttribute()
     {
-        $tipos = [
-            'conciliacao' => 'Audiência de Conciliação',
-            'instrucao' => 'Audiência de Instrução',
-            'preliminar' => 'Audiência Preliminar',
-            'julgamento' => 'Audiência de Julgamento',
+        $tiposMap = [
+            'conciliacao' => 'Conciliação',
+            'instrucao' => 'Instrução',
+            'preliminar' => 'Preliminar',
+            'julgamento' => 'Julgamento',
             'outras' => 'Outras'
         ];
 
-        return $tipos[$this->tipo] ?? $this->tipo;
-    }
-
-    /**
-     * Verificar se a audiência está próxima (nas próximas X horas)
-     */
-    public function isProxima($horas = 2)
-    {
-        if ($this->data->isToday()) {
-            $agora = Carbon::now();
-            $horaAudiencia = Carbon::parse($this->data->format('Y-m-d') . ' ' . $this->hora);
-            
-            return $horaAudiencia->diffInHours($agora, false) <= $horas && $horaAudiencia->isFuture();
-        }
-        
-        return false;
-    }
-
-    /**
-     * Verificar se a audiência é hoje
-     */
-    public function isHoje()
-    {
-        return $this->data->isToday();
+        return $tiposMap[$this->tipo] ?? $this->tipo;
     }
 }

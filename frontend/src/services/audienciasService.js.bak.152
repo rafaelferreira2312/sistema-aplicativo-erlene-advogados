@@ -251,55 +251,19 @@ class AudienciasService {
   }
   
   formatarDadosParaAPI(dados) {
-    // Mapear tipos longos para valores aceitos no banco
-    const tiposMap = {
-      'Audiência de Conciliação': 'conciliacao',
-      'Audiência de Instrução e Julgamento': 'instrucao', 
-      'Audiência Preliminar': 'preliminar',
-      'Audiência de Justificação': 'preliminar',
-      'Audiência de Interrogatório': 'instrucao',
-      'Audiência de Oitiva de Testemunhas': 'instrucao',
-      'Audiência de Tentativa de Conciliação': 'conciliacao',
-      'Audiência Una': 'instrucao', // Mapear para instrucao
-      'conciliacao': 'conciliacao',
-      'instrucao': 'instrucao',
-      'preliminar': 'preliminar',
-      'julgamento': 'instrucao',
-      'outras': 'instrucao'
-    };
-
-    // Mapear status longos para valores aceitos
-    const statusMap = {
-      'Agendada': 'agendada',
-      'Confirmada': 'confirmada', 
-      'Em andamento': 'em_andamento',
-      'Concluída': 'realizada',
-      'Cancelada': 'cancelada',
-      'Adiada': 'adiada',
-      'agendada': 'agendada',
-      'confirmada': 'confirmada',
-      'em_andamento': 'em_andamento',
-      'realizada': 'realizada',
-      'cancelada': 'cancelada',
-      'adiada': 'adiada'
-    };
-
-    const tipo = tiposMap[dados.tipo] || 'conciliacao';
-    const status = statusMap[dados.status] || 'agendada';
-
     return {
-      processo_id: parseInt(dados.processoId || dados.processo_id || 1),
-      cliente_id: parseInt(dados.clienteId || dados.cliente_id || 1),
+      processo_id: parseInt(dados.processoId || dados.processo_id),
+      cliente_id: parseInt(dados.clienteId || dados.cliente_id),
       advogado_id: parseInt(dados.advogadoId || dados.advogado_id || 1),
-      tipo: tipo,
+      tipo: dados.tipo,
       data: dados.data,
       hora: dados.hora,
-      local: dados.local || '',
+      local: dados.local,
       endereco: dados.endereco || '',
       sala: dados.sala || '',
-      advogado: dados.advogado || '',
+      advogado: dados.advogado,
       juiz: dados.juiz || '',
-      status: status,
+      status: dados.status || 'agendada',
       observacoes: dados.observacoes || '',
       lembrete: dados.lembrete !== undefined ? dados.lembrete : true,
       horas_lembrete: parseInt(dados.horasLembrete || dados.horas_lembrete || 2)

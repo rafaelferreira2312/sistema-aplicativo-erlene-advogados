@@ -1,66 +1,23 @@
-// audienciasService.js - Versão corrigida que funciona
+// audienciasService.js - Integrado com api.js (Sistema funcionando)
 // Sistema Erlene Advogados - Módulo Audiências
-// Integração direta com fetch API (como módulos funcionais)
+// Usa o mesmo sistema de autenticação dos módulos funcionais
+
+import apiInstance from './api';
 
 class AudienciasService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-  }
-
-  // Método para obter token de autenticação
-  getAuthToken() {
-    return localStorage.getItem('token') || 
-           localStorage.getItem('erlene_token') || 
-           localStorage.getItem('authToken') ||
-           localStorage.getItem('access_token');
-  }
-
-  // Método para fazer requisições HTTP
-  async makeRequest(endpoint, options = {}) {
-    const token = this.getAuthToken();
-    const url = `${this.baseURL}${endpoint}`;
-    
-    const config = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-        ...(options.headers || {})
-      },
-      ...options
-    };
-
-    console.log(`🔗 API Request: ${url}`, { method: config.method, hasToken: !!token });
-
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log(`✅ API Response: ${url}`, data);
-      return data;
-      
-    } catch (error) {
-      console.error(`❌ API Error: ${url}`, error);
-      throw error;
-    }
+    this.api = apiInstance;
   }
 
   // ====== MÉTODOS DE LISTAGEM ======
   
   async listarAudiencias() {
     try {
-      const response = await this.makeRequest('/admin/audiencias');
+      const response = await this.api.apiRequest('/admin/audiencias');
       
       return {
         success: true,
         audiencias: response.data || response || [],
-        pagination: response.pagination || null,
         message: 'Audiências carregadas com sucesso'
       };
     } catch (error) {
@@ -75,7 +32,7 @@ class AudienciasService {
 
   async obterAudiencia(id) {
     try {
-      const response = await this.makeRequest(`/admin/audiencias/${id}`);
+      const response = await this.api.apiRequest(`/admin/audiencias/${id}`);
       
       return {
         success: true,
@@ -96,7 +53,7 @@ class AudienciasService {
   
   async criarAudiencia(dadosAudiencia) {
     try {
-      const response = await this.makeRequest('/admin/audiencias', {
+      const response = await this.api.apiRequest('/admin/audiencias', {
         method: 'POST',
         body: JSON.stringify(dadosAudiencia)
       });
@@ -111,8 +68,7 @@ class AudienciasService {
       return {
         success: false,
         audiencia: null,
-        error: error.message || 'Erro ao criar audiência',
-        errors: error.errors || null
+        error: error.message || 'Erro ao criar audiência'
       };
     }
   }
@@ -121,7 +77,7 @@ class AudienciasService {
   
   async atualizarAudiencia(id, dadosAudiencia) {
     try {
-      const response = await this.makeRequest(`/admin/audiencias/${id}`, {
+      const response = await this.api.apiRequest(`/admin/audiencias/${id}`, {
         method: 'PUT',
         body: JSON.stringify(dadosAudiencia)
       });
@@ -136,8 +92,7 @@ class AudienciasService {
       return {
         success: false,
         audiencia: null,
-        error: error.message || 'Erro ao atualizar audiência',
-        errors: error.errors || null
+        error: error.message || 'Erro ao atualizar audiência'
       };
     }
   }
@@ -146,7 +101,7 @@ class AudienciasService {
   
   async excluirAudiencia(id) {
     try {
-      const response = await this.makeRequest(`/admin/audiencias/${id}`, {
+      const response = await this.api.apiRequest(`/admin/audiencias/${id}`, {
         method: 'DELETE'
       });
       
@@ -167,7 +122,7 @@ class AudienciasService {
   
   async obterEstatisticas() {
     try {
-      const response = await this.makeRequest('/admin/audiencias/dashboard/stats');
+      const response = await this.api.apiRequest('/admin/audiencias/dashboard/stats');
       
       return {
         success: true,
@@ -180,11 +135,9 @@ class AudienciasService {
         success: false,
         stats: {
           hoje: 0,
-          proximas_2h: 0,
-          em_andamento: 0,
-          total_mes: 0,
-          agendadas: 0,
-          realizadas_mes: 0
+          proximasSemana: 0,
+          total: 0,
+          realizadas: 0
         },
         error: error.message || 'Erro ao carregar estatísticas'
       };
@@ -195,7 +148,7 @@ class AudienciasService {
   
   async obterAudienciasHoje() {
     try {
-      const response = await this.makeRequest('/admin/audiencias/filters/hoje');
+      const response = await this.api.apiRequest('/admin/audiencias/filters/hoje');
       
       return {
         success: true,
@@ -214,7 +167,7 @@ class AudienciasService {
 
   async obterProximasAudiencias() {
     try {
-      const response = await this.makeRequest('/admin/audiencias/filters/proximas');
+      const response = await this.api.apiRequest('/admin/audiencias/filters/proximas');
       
       return {
         success: true,
@@ -236,8 +189,8 @@ class AudienciasService {
   validarDadosAudiencia(dados) {
     const erros = [];
     
-    if (!dados.processo_id && !dados.processoId) erros.push('Processo é obrigatório');
-    if (!dados.cliente_id && !dados.clienteId) erros.push('Cliente é obrigatório');
+    if (!dados.processo_id) erros.push('Processo é obrigatório');
+    if (!dados.cliente_id) erros.push('Cliente é obrigatório');
     if (!dados.tipo) erros.push('Tipo de audiência é obrigatório');
     if (!dados.data) erros.push('Data é obrigatória');
     if (!dados.hora) erros.push('Hora é obrigatória');
@@ -251,58 +204,19 @@ class AudienciasService {
   }
   
   formatarDadosParaAPI(dados) {
-    // Mapear tipos longos para valores aceitos no banco
-    const tiposMap = {
-      'Audiência de Conciliação': 'conciliacao',
-      'Audiência de Instrução e Julgamento': 'instrucao', 
-      'Audiência Preliminar': 'preliminar',
-      'Audiência de Justificação': 'preliminar',
-      'Audiência de Interrogatório': 'instrucao',
-      'Audiência de Oitiva de Testemunhas': 'instrucao',
-      'Audiência de Tentativa de Conciliação': 'conciliacao',
-      'Audiência Una': 'instrucao', // Mapear para instrucao
-      'conciliacao': 'conciliacao',
-      'instrucao': 'instrucao',
-      'preliminar': 'preliminar',
-      'julgamento': 'instrucao',
-      'outras': 'instrucao'
-    };
-
-    // Mapear status longos para valores aceitos
-    const statusMap = {
-      'Agendada': 'agendada',
-      'Confirmada': 'confirmada', 
-      'Em andamento': 'em_andamento',
-      'Concluída': 'realizada',
-      'Cancelada': 'cancelada',
-      'Adiada': 'adiada',
-      'agendada': 'agendada',
-      'confirmada': 'confirmada',
-      'em_andamento': 'em_andamento',
-      'realizada': 'realizada',
-      'cancelada': 'cancelada',
-      'adiada': 'adiada'
-    };
-
-    const tipo = tiposMap[dados.tipo] || 'conciliacao';
-    const status = statusMap[dados.status] || 'agendada';
-
     return {
-      processo_id: parseInt(dados.processoId || dados.processo_id || 1),
-      cliente_id: parseInt(dados.clienteId || dados.cliente_id || 1),
-      advogado_id: parseInt(dados.advogadoId || dados.advogado_id || 1),
-      tipo: tipo,
+      processo_id: parseInt(dados.processoId || dados.processo_id),
+      cliente_id: parseInt(dados.clienteId || dados.cliente_id),
+      tipo: dados.tipo,
       data: dados.data,
       hora: dados.hora,
-      local: dados.local || '',
-      endereco: dados.endereco || '',
+      local: dados.local,
       sala: dados.sala || '',
-      advogado: dados.advogado || '',
+      endereco: dados.endereco || '',
+      advogado: dados.advogado,
       juiz: dados.juiz || '',
-      status: status,
-      observacoes: dados.observacoes || '',
-      lembrete: dados.lembrete !== undefined ? dados.lembrete : true,
-      horas_lembrete: parseInt(dados.horasLembrete || dados.horas_lembrete || 2)
+      status: dados.status || 'agendada',
+      observacoes: dados.observacoes || ''
     };
   }
 
@@ -311,18 +225,14 @@ class AudienciasService {
   formatarDataHora(data, hora) {
     if (!data) return '';
     
-    try {
-      const dataObj = new Date(data + 'T' + (hora || '00:00'));
-      return dataObj.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return 'Data inválida';
-    }
+    const dataObj = new Date(data + 'T' + (hora || '00:00'));
+    return dataObj.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
   
   formatarTipoAudiencia(tipo) {
@@ -333,8 +243,7 @@ class AudienciasService {
       'inicial': 'Audiência Inicial',
       'una': 'Audiência Una',
       'virtual': 'Virtual',
-      'presencial': 'Presencial',
-      'preliminar': 'Preliminar'
+      'presencial': 'Presencial'
     };
     
     return tipos[tipo] || tipo;
@@ -344,10 +253,9 @@ class AudienciasService {
     const statusMap = {
       'agendada': { label: 'Agendada', class: 'bg-blue-100 text-blue-800' },
       'confirmada': { label: 'Confirmada', class: 'bg-green-100 text-green-800' },
-      'em_andamento': { label: 'Em andamento', class: 'bg-yellow-100 text-yellow-800' },
       'realizada': { label: 'Realizada', class: 'bg-gray-100 text-gray-800' },
       'cancelada': { label: 'Cancelada', class: 'bg-red-100 text-red-800' },
-      'adiada': { label: 'Adiada', class: 'bg-orange-100 text-orange-800' }
+      'adiada': { label: 'Adiada', class: 'bg-yellow-100 text-yellow-800' }
     };
     
     return statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-800' };
@@ -363,8 +271,7 @@ class AudienciasService {
       'inicial': 'bg-purple-500',
       'una': 'bg-yellow-500',
       'virtual': 'bg-indigo-500',
-      'presencial': 'bg-pink-500',
-      'preliminar': 'bg-teal-500'
+      'presencial': 'bg-pink-500'
     };
     
     return cores[tipo] || 'bg-gray-500';
@@ -373,23 +280,19 @@ class AudienciasService {
   calcularTempoRestante(data, hora) {
     if (!data || !hora) return null;
     
-    try {
-      const agora = new Date();
-      const dataAudiencia = new Date(data + 'T' + hora);
-      const diff = dataAudiencia.getTime() - agora.getTime();
-      
-      if (diff < 0) return 'Expirado';
-      
-      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      
-      if (dias > 0) return `${dias} dia(s)`;
-      if (horas > 0) return `${horas} hora(s)`;
-      
-      return 'Hoje';
-    } catch (e) {
-      return null;
-    }
+    const agora = new Date();
+    const dataAudiencia = new Date(data + 'T' + hora);
+    const diff = dataAudiencia.getTime() - agora.getTime();
+    
+    if (diff < 0) return 'Expirado';
+    
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (dias > 0) return `${dias} dia(s)`;
+    if (horas > 0) return `${horas} hora(s)`;
+    
+    return 'Hoje';
   }
 }
 

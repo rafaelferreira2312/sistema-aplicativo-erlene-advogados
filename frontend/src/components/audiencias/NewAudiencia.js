@@ -95,7 +95,7 @@ const NewAudiencia = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.processoId) newErrors.processoId = 'Processo é obrigatório';
+    if (!formData.processoId || formData.processoId === "") newErrors.processoId = "Processo é obrigatório";
     if (!formData.tipo.trim()) newErrors.tipo = 'Tipo de audiência é obrigatório';
     if (!formData.data) newErrors.data = 'Data é obrigatória';
     if (!formData.hora) newErrors.hora = 'Hora é obrigatória';
@@ -137,7 +137,7 @@ const NewAudiencia = () => {
     'Audiência de Interrogatório',
     'Audiência de Oitiva de Testemunhas',
     'Audiência de Tentativa de Conciliação',
-    'Audiência Una'
+    'Audiência de Instrução'
   ];
 
   const advogados = [
