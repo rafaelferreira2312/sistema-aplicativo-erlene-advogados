@@ -1,63 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeftIcon,
   CalendarIcon,
   ClockIcon,
+  UserIcon,
   MapPinIcon,
+  ScaleIcon,
+  BuildingOfficeIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import audienciasService from '../../services/audienciasService';
 
-const EditAudiencia = () => {
+const NewAudiencia = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
   const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
+  const [processes, setProcesses] = useState([]);
+  const [clients, setClients] = useState([]);
   
   const [formData, setFormData] = useState({
+    // Dados básicos
+    processoId: '',
+    clienteId: '',
     tipo: '',
     data: '',
     hora: '',
+    
+    // Local
     local: '',
-    sala: '',
     endereco: '',
+    sala: '',
+    
+    // Responsáveis
     advogado: '',
     juiz: '',
+    
+    // Detalhes
     status: 'Agendada',
-    observacoes: ''
+    observacoes: '',
+    lembrete: true,
+    horasLembrete: '2'
   });
 
   const [errors, setErrors] = useState({});
 
-  // Mock data da audiência
-  const mockAudiencia = {
-    id: 1,
-    tipo: 'Audiência de Conciliação',
-    data: '2024-07-25',
-    hora: '09:00',
-    local: 'TJSP - 1ª Vara Cível',
-    sala: 'Sala 101',
-    endereco: 'Praça da Sé, 200 - Centro, São Paulo - SP',
-    advogado: 'Dr. Carlos Oliveira',
-    juiz: 'Dr. José Silva',
-    status: 'Confirmada',
-    observacoes: 'Audiência de tentativa de acordo'
-  };
+  // Mock data
+  const mockProcesses = [
+    { id: 1, number: '1001234-56.2024.8.26.0001', client: 'João Silva Santos', clientId: 1 },
+    { id: 2, number: '2002345-67.2024.8.26.0002', client: 'Empresa ABC Ltda', clientId: 2 },
+    { id: 3, number: '3003456-78.2024.8.26.0003', client: 'Maria Oliveira Costa', clientId: 3 }
+  ];
 
-  useEffect(() => { const carregarDados = async () => {
-    // Simular carregamento dos dados
-    const resultado = await audienciasService.obterAudiencia(id); if (resultado.success) {
-      setFormData({ tipo: resultado.audiencia.tipo || "", data: resultado.audiencia.data ? resultado.audiencia.data.split("T")[0] : "", hora: resultado.audiencia.hora ? resultado.audiencia.hora.substring(0, 5) : "", local: resultado.audiencia.local || "", sala: resultado.audiencia.sala || "", endereco: resultado.audiencia.endereco || "", advogado: resultado.audiencia.advogado || "", juiz: resultado.audiencia.juiz || "", status: resultado.audiencia.status || "agendada", observacoes: resultado.audiencia.observacoes || "" });
-      setLoadingData(false);
-    }
-  }; carregarDados(); }, [id]);
+  const mockClients = [
+    { id: 1, name: 'João Silva Santos', type: 'PF', document: '123.456.789-00' },
+    { id: 2, name: 'Empresa ABC Ltda', type: 'PJ', document: '12.345.678/0001-90' },
+    { id: 3, name: 'Maria Oliveira Costa', type: 'PF', document: '987.654.321-00' }
+  ];
+
+  useEffect(() => {
+    // Simular carregamento
+    setTimeout(() => {
+      setProcesses(mockProcesses);
+      setClients(mockClients);
+    }, 500);
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
     
     // Limpar erro do campo
@@ -67,16 +78,28 @@ const EditAudiencia = () => {
         [name]: ''
       }));
     }
+
+    // Auto-preencher cliente quando processo for selecionado
+    if (name === 'processoId' && value) {
+      const selectedProcess = mockProcesses.find(p => p.id.toString() === value);
+      if (selectedProcess) {
+        setFormData(prev => ({
+          ...prev,
+          clienteId: selectedProcess.clientId.toString()
+        }));
+      }
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
     
+    if (!formData.processoId) newErrors.processoId = 'Processo é obrigatório';
     if (!formData.tipo.trim()) newErrors.tipo = 'Tipo de audiência é obrigatório';
     if (!formData.data) newErrors.data = 'Data é obrigatória';
     if (!formData.hora) newErrors.hora = 'Hora é obrigatória';
     if (!formData.local.trim()) newErrors.local = 'Local é obrigatório';
-    if (!formData.advogado.trim()) newErrors.advogado = 'Advogado é obrigatório';
+    if (!formData.advogado.trim()) newErrors.advogado = 'Advogado responsável é obrigatório';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,23 +114,29 @@ const EditAudiencia = () => {
     
     try {
       // Simular salvamento
-      const resultado = await audienciasService.atualizarAudiencia(id, audienciasService.formatarDadosParaAPI(formData)); if (!resultado.success) throw new Error(resultado.error);
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      alert('Audiência atualizada com sucesso!');
+      alert('Audiência agendada com sucesso!');
       navigate('/admin/audiencias');
     } catch (error) {
-      alert('Erro ao atualizar audiência');
+      alert('Erro ao agendar audiência');
     } finally {
       setLoading(false);
     }
   };
+
+  const selectedProcess = processes.find(p => p.id.toString() === formData.processoId);
+  const selectedClient = clients.find(c => c.id.toString() === formData.clienteId);
 
   const tiposAudiencia = [
     'Audiência de Conciliação',
     'Audiência de Instrução e Julgamento',
     'Audiência Preliminar',
     'Audiência de Justificação',
-    'Audiência de Interrogatório'
+    'Audiência de Interrogatório',
+    'Audiência de Oitiva de Testemunhas',
+    'Audiência de Tentativa de Conciliação',
+    'Audiência Una'
   ];
 
   const advogados = [
@@ -115,26 +144,9 @@ const EditAudiencia = () => {
     'Dra. Maria Santos',
     'Dr. Pedro Costa',
     'Dra. Ana Silva',
+    'Dr. João Ferreira',
     'Dra. Erlene Chaves Silva'
   ];
-
-  if (loadingData) {
-    return (
-      <div className="space-y-8">
-        <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </div>
-        <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="space-y-4">
-            <div className="h-12 bg-gray-200 rounded"></div>
-            <div className="h-12 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">
@@ -149,8 +161,8 @@ const EditAudiencia = () => {
               <ArrowLeftIcon className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Editar Audiência</h1>
-              <p className="text-lg text-gray-600 mt-2">Atualize os dados da audiência #{id}</p>
+              <h1 className="text-3xl font-bold text-gray-900">Nova Audiência</h1>
+              <p className="text-lg text-gray-600 mt-2">Agende uma nova audiência no sistema</p>
             </div>
           </div>
           <CalendarIcon className="w-12 h-12 text-primary-600" />
@@ -158,6 +170,56 @@ const EditAudiencia = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Seleção de Processo */}
+        <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Processo e Cliente</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Selecione o Processo *
+              </label>
+              <select
+                name="processoId"
+                value={formData.processoId}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  errors.processoId ? 'border-red-300' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Selecione um processo...</option>
+                {processes.map((process) => (
+                  <option key={process.id} value={process.id}>
+                    {process.number} - {process.client}
+                  </option>
+                ))}
+              </select>
+              {errors.processoId && <p className="text-red-500 text-sm mt-1">{errors.processoId}</p>}
+            </div>
+
+            {/* Preview do Processo e Cliente */}
+            {selectedProcess && selectedClient && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Processo Selecionado:</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <ScaleIcon className="w-4 h-4 text-primary-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">{selectedProcess.number}</span>
+                  </div>
+                  <div className="flex items-center">
+                    {selectedClient.type === 'PF' ? (
+                      <UserIcon className="w-4 h-4 text-primary-600 mr-2" />
+                    ) : (
+                      <BuildingOfficeIcon className="w-4 h-4 text-primary-600 mr-2" />
+                    )}
+                    <span className="text-sm text-gray-700">{selectedClient.name}</span>
+                  </div>
+                  <div className="text-xs text-gray-500">{selectedClient.document}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Dados da Audiência */}
         <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Dados da Audiência</h2>
@@ -208,6 +270,7 @@ const EditAudiencia = () => {
                   name="data"
                   value={formData.data}
                   onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                     errors.data ? 'border-red-300' : 'border-gray-300'
                   }`}
@@ -237,7 +300,7 @@ const EditAudiencia = () => {
 
         {/* Local */}
         <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Local</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Local da Audiência</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,7 +323,7 @@ const EditAudiencia = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Sala</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sala/Gabinete</label>
               <input
                 type="text"
                 name="sala"
@@ -272,14 +335,14 @@ const EditAudiencia = () => {
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Endereço Completo</label>
               <textarea
                 name="endereco"
                 value={formData.endereco}
                 onChange={handleChange}
                 rows={2}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Endereço completo..."
+                placeholder="Endereço completo do fórum/tribunal..."
               />
             </div>
           </div>
@@ -310,7 +373,7 @@ const EditAudiencia = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Juiz</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Juiz/Magistrado</label>
               <input
                 type="text"
                 name="juiz"
@@ -323,19 +386,61 @@ const EditAudiencia = () => {
           </div>
         </div>
 
-        {/* Observações */}
+        {/* Lembrete e Observações */}
         <div className="bg-white shadow-erlene rounded-xl border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Observações</h2>
-          <div className="relative">
-            <DocumentTextIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <textarea
-              name="observacoes"
-              value={formData.observacoes}
-              onChange={handleChange}
-              rows={4}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Observações sobre a audiência..."
-            />
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Configurações</h2>
+          
+          {/* Lembrete */}
+          <div className="mb-6">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                name="lembrete"
+                checked={formData.lembrete}
+                onChange={handleChange}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="ml-3 text-sm font-medium text-gray-700">
+                Enviar lembrete automático
+              </span>
+            </label>
+          </div>
+          
+          {formData.lembrete && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Enviar lembrete com antecedência de:
+              </label>
+              <select
+                name="horasLembrete"
+                value={formData.horasLembrete}
+                onChange={handleChange}
+                className="w-full md:w-1/3 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="1">1 hora</option>
+                <option value="2">2 horas</option>
+                <option value="4">4 horas</option>
+                <option value="8">8 horas</option>
+                <option value="24">1 dia</option>
+                <option value="48">2 dias</option>
+              </select>
+            </div>
+          )}
+          
+          {/* Observações */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+            <div className="relative">
+              <DocumentTextIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <textarea
+                name="observacoes"
+                value={formData.observacoes}
+                onChange={handleChange}
+                rows={4}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Observações sobre a audiência..."
+              />
+            </div>
           </div>
         </div>
 
@@ -359,7 +464,7 @@ const EditAudiencia = () => {
                   Salvando...
                 </div>
               ) : (
-                'Atualizar Audiência'
+                'Agendar Audiência'
               )}
             </button>
           </div>
@@ -369,4 +474,4 @@ const EditAudiencia = () => {
   );
 };
 
-export default EditAudiencia;
+export default NewAudiencia;

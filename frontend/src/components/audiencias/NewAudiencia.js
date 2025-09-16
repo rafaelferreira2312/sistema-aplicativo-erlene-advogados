@@ -10,6 +10,7 @@ import {
   BuildingOfficeIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import audienciasService from '../../services/audienciasService';
 
 const NewAudiencia = () => {
   const navigate = useNavigate();
@@ -114,7 +115,7 @@ const NewAudiencia = () => {
     
     try {
       // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const resultado = await audienciasService.criarAudiencia(audienciasService.formatarDadosParaAPI(formData)); if (!resultado.success) throw new Error(resultado.error);
       
       alert('Audiência agendada com sucesso!');
       navigate('/admin/audiencias');
