@@ -1,40 +1,61 @@
-export interface JwtPayload {
-  id: number;
-  email: string;
+export interface User {
+  id: string;
   name: string;
-  perfil: string;
-  unidade_id?: number;
-  iat?: number;
-  exp?: number;
-  iss?: string;
-  aud?: string;
+  email: string;
+  role: 'admin' | 'lawyer' | 'client';
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface AuthResponse {
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
   success: boolean;
   message: string;
-  data: {
-    user: AuthUser;
-    token: string;
-    expires_in: string;
+  data?: {
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+      created_at: Date;
+    };
   };
 }
 
-export interface AuthUser {
-  id: number;
+export interface RegisterRequest {
   name: string;
   email: string;
-  perfil: string;
-  unidade_id?: number;
-  status: string;
-  ultimo_acesso?: Date;
+  password: string;
+  role?: 'admin' | 'lawyer' | 'client';
 }
 
-// Tipos para middleware de autenticação
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthUser;
-    }
-  }
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    name: string;
+  };
 }

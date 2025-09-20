@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import processesService from '../../services/processesService';
-import clientsService from '../../services/clientsService';
+import { processesService } from '../../services/processesService';
+import { clientsService } from '../../services/clientsService';
 import {
   ArrowLeftIcon,
   ScaleIcon,

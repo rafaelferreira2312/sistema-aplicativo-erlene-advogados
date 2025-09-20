@@ -2,135 +2,134 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import routes from './routes';
 
 // Carregar variáveis de ambiente
 dotenv.config();
 
-// Inicializar Prisma
-export const prisma = new PrismaClient();
-
-// Criar aplicação Express
 const app = express();
+const prisma = new PrismaClient();
+const PORT = process.env.PORT || 3008;
 
-// Configurar rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // máximo 100 requests por IP
-  message: {
-    error: 'Muitas requisições feitas. Tente novamente em 15 minutos.',
-  },
-});
-
-// Middleware de segurança
-app.use(helmet());
-app.use(compression());
-app.use(limiter);
-
-// CORS configurado para o frontend React
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+// Middlewares de segurança
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Middleware de parsing
+// CORS configurado para desenvolvimento
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://erleneadvogados.vancouvertec.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Middlewares de parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging
-if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('combined'));
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
 }
 
-// Health check
+// Testar conexão com banco
+app.use(async (req, res, next) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    next();
+  } catch (error) {
+    console.error('Erro de conexão com banco:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: 'Erro de conexão com banco de dados'
+      });
+    }
+  }
+});
+
+// Rotas principais
+app.use('/api', routes);
+
+// Rota de health check
 app.get('/health', (req, res) => {
   res.status(200).json({
-    status: 'OK',
-    message: 'API Erlene Advogados funcionando',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    success: true,
+    message: 'Sistema Erlene Advogados - Backend Node.js',
     version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    database: 'connected'
   });
 });
 
-// Rota de teste da conexão com banco
-app.get('/api/test', async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    
-    const userCount = await prisma.user.count();
-    const clienteCount = await prisma.cliente.count();
-    
-    res.json({
-      success: true,
-      message: 'Conexão com banco funcionando',
-      data: {
-        users: userCount,
-        clientes: clienteCount,
-        database: 'MySQL conectado',
-      },
-    });
-  } catch (error) {
-    console.error('Erro ao testar banco:', error);
+// Rota raiz
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API Sistema Erlene Advogados',
+    docs: '/api/health',
+    auth: '/api/auth/health'
+  });
+});
+
+// Middleware de erro global
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Erro não tratado:', error);
+  
+  if (!res.headersSent) {
     res.status(500).json({
       success: false,
-      message: 'Erro na conexão com banco',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno',
+      message: 'Erro interno do servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// Importar rotas (serão criadas nos próximos scripts)
-// app.use('/api/auth', authRoutes);
-// app.use('/api/admin', adminRoutes);
-// app.use('/api/portal', portalRoutes);
-
-// Rota não encontrada
+// Middleware para rotas não encontradas
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Rota não encontrada',
-    path: req.originalUrl,
+    path: req.originalUrl
   });
 });
 
-// Middleware de tratamento de erros
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Erro na aplicação:', error);
-  
-  res.status(error.status || 500).json({
-    success: false,
-    message: error.message || 'Erro interno do servidor',
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
-  });
-});
-
-// Porta e inicialização
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔧 Test endpoint: http://localhost:${PORT}/api/test`);
-  console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+// Iniciar servidor
+const server = app.listen(PORT, () => {
+  console.log(`
+🚀 Servidor Node.js rodando!
+📍 URL: http://localhost:${PORT}
+🔗 Health: http://localhost:${PORT}/health
+🔐 Auth: http://localhost:${PORT}/api/auth/health
+🌍 Environment: ${process.env.NODE_ENV || 'development'}
+📅 Timestamp: ${new Date().toISOString()}
+  `);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('🛑 Recebido SIGTERM, encerrando servidor...');
-  await prisma.$disconnect();
-  process.exit(0);
+  console.log('Recebido SIGTERM, fechando servidor...');
+  server.close(() => {
+    console.log('Servidor fechado');
+    process.exit(0);
+  });
 });
 
 process.on('SIGINT', async () => {
-  console.log('🛑 Recebido SIGINT, encerrando servidor...');
+  console.log('Recebido SIGINT, fechando servidor...');
   await prisma.$disconnect();
-  process.exit(0);
+  server.close(() => {
+    console.log('Servidor fechado');
+    process.exit(0);
+  });
 });
 
 export default app;

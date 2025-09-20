@@ -11,7 +11,7 @@ import {
   EyeSlashIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import clientsService from '../../services/api/clientsService';
+import { clientsService } from '../../services/api/clientsService';
 import { formatDocument, formatPhone, formatCEP } from '../../utils/formatters';
 import { clientValidators } from '../../utils/validators';
 import toast from 'react-hot-toast';

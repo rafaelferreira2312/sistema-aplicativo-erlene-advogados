@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Limpar Autenticação</title>
+</head>
+<body>
+    <h1>Limpando dados de autenticação...</h1>
+    <script>
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userType');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        alert('Dados limpos! Volte para /login');
+        window.location.href = '/login';
+    </script>
+</body>
+</html>

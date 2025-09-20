@@ -1,224 +1,63 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/auth/AuthProvider';
+
+// Componentes básicos
 import Login from './pages/auth/Login';
-import PortalLogin from './pages/portal/PortalLogin';
-import PortalDashboard from './pages/portal/PortalDashboard';
-import PortalProcessos from './pages/portal/PortalProcessos';
-import PortalDocumentos from './pages/portal/PortalDocumentos';
-import PortalPagamentos from './pages/portal/PortalPagamentos';
-import PortalMensagens from './pages/portal/PortalMensagens';
-import PortalPerfil from './pages/portal/PortalPerfil';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Clients from './pages/admin/Clients';
-import NewClient from './components/clients/NewClient';
-import EditClient from './components/clients/EditClient';
 import Processes from './pages/admin/Processes';
-import NewProcess from './components/processes/NewProcess';
-import EditProcess from './components/processes/EditProcess';
-import ProcessDetails from './components/processes/ProcessDetails';
-import Audiencias from './pages/admin/Audiencias';
-import NewAudiencia from './components/audiencias/NewAudiencia';
-import EditAudiencia from './components/audiencias/EditAudiencia';
-import Prazos from './pages/admin/Prazos';
-import NewPrazo from './components/prazos/NewPrazo';
-import EditPrazo from './components/prazos/EditPrazo';
-import Atendimentos from './pages/admin/Atendimentos';
-import NewAtendimento from './components/atendimentos/NewAtendimento';
-import Financeiro from './pages/admin/Financeiro';
-import NewTransacao from './components/financeiro/NewTransacao';
-import EditTransacao from './components/financeiro/EditTransacao';
-import Documentos from './pages/admin/Documentos';
-import NewDocumento from './components/documentos/NewDocumento';
-import EditDocumento from './components/documentos/EditDocumento';
-import Kanban from './pages/admin/Kanban';
-import NewTask from './components/kanban/NewTask';
-import EditTask from './components/kanban/EditTask';
-import NewUser from "./components/users/NewUser";
-import EditUser from "./components/users/EditUser";
-import Settings from "./pages/admin/Settings";
-import Users from "./pages/admin/Users";
-import Reports from "./pages/admin/Reports";
 
-// Componente de proteção de rota
-const ProtectedRoute = ({ children, requiredAuth = true, allowedTypes = [] }) => {
-  const token = localStorage.getItem('authToken') || localStorage.getItem('erlene_token') || localStorage.getItem('token');
-  const isAuthFlag = localStorage.getItem('isAuthenticated') === 'true';
-  const portalAuth = localStorage.getItem('portalAuth') === 'true';
-  
-  const isAuthenticated = !!(token || isAuthFlag);
-  const userType = localStorage.getItem('userType') || (portalAuth ? 'cliente' : 'admin');
+// Route Guards
+import PrivateRoute from './components/auth/PrivateRoute';
+import PublicRoute from './components/auth/PublicRoute';
 
-  if (requiredAuth && !isAuthenticated) {
-    if (allowedTypes.includes('cliente')) {
-      return <Navigate to="/portal/login" replace />;
-    }
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!requiredAuth && isAuthenticated) {
-    if (userType === 'cliente') {
-      return <Navigate to="/portal/dashboard" replace />;
-    }
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (allowedTypes.length > 0 && !allowedTypes.includes(userType)) {
-    if (userType === 'cliente') {
-      return <Navigate to="/portal/dashboard" replace />;
-    }
-    return <Navigate to="/admin" replace />;
-  }
-
-  return children;
-};
-
-// Página 404
-const NotFoundPage = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <h1 className="text-6xl font-bold text-gray-400 mb-4">404</h1>
-      <p className="text-gray-600 mb-4">Página não encontrada</p>
-      <a href="/login" className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800">
-        Voltar ao Login
-      </a>
-    </div>
-  </div>
-);
-
-// App principal
 function App() {
   return (
-    <Router>
-      <div className="App h-screen">
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Toaster position="top-right" />
           
-          {/* Login Administrativo */}
-          <Route
-            path="/login"
-            element={
-              <ProtectedRoute requiredAuth={false}>
-                <Login />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Portal do Cliente */}
-          <Route
-            path="/portal/login"
-            element={
-              <ProtectedRoute requiredAuth={false}>
-                <PortalLogin />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/dashboard"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDashboard />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/processos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalProcessos />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/documentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalDocumentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/pagamentos"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPagamentos />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/mensagens"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalMensagens />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/portal/perfil"
-            element={
-              <ProtectedRoute allowedTypes={['cliente']}>
-                <PortalPerfil />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Sistema Administrativo */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute allowedTypes={['admin']}>
-                <AdminLayout>
-                  <Routes>
-                    <Route path="" element={<Dashboard />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="clientes" element={<Clients />} />
-                    <Route path="clientes/novo" element={<NewClient />} />
-                    <Route path="clientes/:id" element={<EditClient />} />
-                    
-                    {/* ROTAS DE PROCESSOS ATUALIZADAS */}
-                    <Route path="processos" element={<Processes />} />
-                    <Route path="processos/novo" element={<NewProcess />} />
-                    <Route path="processos/:id" element={<ProcessDetails />} />
-                    <Route path="processos/:id/editar" element={<EditProcess />} />
-                    
-                    <Route path="audiencias" element={<Audiencias />} />
-                    <Route path="audiencias/nova" element={<NewAudiencia />} />
-                    <Route path="audiencias/:id/editar" element={<EditAudiencia />} />
-                    <Route path="prazos" element={<Prazos />} />
-                    <Route path="prazos/novo" element={<NewPrazo />} />
-                    <Route path="prazos/:id/editar" element={<EditPrazo />} />
-                    <Route path="atendimentos" element={<Atendimentos />} />
-                    <Route path="atendimentos/novo" element={<NewAtendimento />} />
-                    <Route path="financeiro" element={<Financeiro />} />
-                    <Route path="financeiro/novo" element={<NewTransacao />} />
-                    <Route path="financeiro/:id/editar" element={<EditTransacao />} />
-                    <Route path="documentos" element={<Documentos />} />
-                    <Route path="documentos/novo" element={<NewDocumento />} />
-                    <Route path="documentos/:id/editar" element={<EditDocumento />} />
-                    <Route path="kanban" element={<Kanban />} />
-                    <Route path="kanban/nova" element={<NewTask />} />
-                    <Route path="kanban/:id/editar" element={<EditTask />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="users" element={<Users />} />
-                    <Route path="users/novo" element={<NewUser />} />
-                    <Route path="users/:id/editar" element={<EditUser />} />
-                    <Route path="settings" element={<Settings />} />
-                  </Routes>
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </div>
-    </Router>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              } 
+            />
+
+            {/* Área Administrativa */}
+            <Route 
+              path="/admin/*" 
+              element={
+                <PrivateRoute>
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/clients" element={<Clients />} />
+                      <Route path="/processes" element={<Processes />} />
+                    </Routes>
+                  </AdminLayout>
+                </PrivateRoute>
+              } 
+            />
+
+            {/* Redirecionar raiz para login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

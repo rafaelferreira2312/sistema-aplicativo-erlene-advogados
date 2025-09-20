@@ -1,3 +1,36 @@
+#!/bin/bash
+
+# Script 209b - Corrigir Login com Layout Original Exato
+# Sistema Erlene Advogados - Migração Laravel → Node.js
+# Data: $(date +%Y-%m-%d)
+# EXECUTE DENTRO DA PASTA: frontend/
+
+echo "🔧 Script 209b - Restaurando layout original EXATO do Login..."
+
+# Verificar diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    exit 1
+fi
+
+echo "✅ Verificação de diretório OK"
+
+# Encontrar arquivo de Login
+if [ -f "src/pages/auth/Login/index.js" ]; then
+    LOGIN_FILE="src/pages/auth/Login/index.js"
+elif [ -f "src/pages/auth/Login.js" ]; then
+    LOGIN_FILE="src/pages/auth/Login.js"
+else
+    echo "❌ Arquivo Login não encontrado!"
+    exit 1
+fi
+
+# Fazer backup
+cp "$LOGIN_FILE" "${LOGIN_FILE}.bak.209b"
+
+# Restaurar layout EXATO do arquivo original, apenas mudando a lógica interna
+echo "🔧 Restaurando layout original com lógica Node.js..."
+cat > "$LOGIN_FILE" << 'EOF'
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -225,3 +258,14 @@ const Login = () => {
 };
 
 export default Login;
+EOF
+
+echo "✅ Layout original restaurado com precisão!"
+echo ""
+echo "🔧 CORREÇÃO APLICADA:"
+echo "   • Layout visual 100% idêntico ao arquivo original"
+echo "   • Apenas lógica interna alterada: useAuth() em vez de apiService.loginAdmin()"
+echo "   • Mantidas todas as classes CSS, estrutura e design originais"
+echo ""
+echo "📋 TESTE:"
+echo "   Credenciais: admin@erlene.com / 123456"

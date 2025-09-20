@@ -1,3 +1,33 @@
+#!/bin/bash
+
+# Script 206 - Criar API Service para Node.js
+# Sistema Erlene Advogados - Migração Laravel → Node.js
+# Data: $(date +%Y-%m-%d)
+# EXECUTE DENTRO DA PASTA: frontend/
+
+echo "🔗 Script 206 - Criando API Service para Backend Node.js..."
+
+# Verificar diretório correto
+if [ ! -f "package.json" ]; then
+    echo "❌ Erro: Execute este script dentro da pasta frontend/"
+    exit 1
+fi
+
+echo "✅ Verificação de diretório OK"
+
+# Fazer backup dos arquivos que serão alterados
+echo "📦 Criando backup..."
+mkdir -p backups/script-206
+if [ -f "src/services/api.js" ]; then
+    cp src/services/api.js backups/script-206/api.js.bak
+fi
+
+echo "✅ Backup criado"
+
+# 1. Criar service de API atualizado para Node.js
+echo "🔧 Criando serviço de API para Node.js..."
+mkdir -p src/services
+cat > src/services/api.js << 'EOF'
 import axios from 'axios';
 
 // Configuração base da API
@@ -47,55 +77,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Função genérica para requisições (compatibilidade com services antigos)
-export const apiRequest = async (method, endpoint, data = null) => {
-  try {
-    const config = {
-      method,
-      url: endpoint,
-      ...(data && { data })
-    };
-    
-    const response = await api.request(config);
-    return response.data;
-  } catch (error) {
-    console.error(`Erro na requisição ${method} ${endpoint}:`, error);
-    throw error;
-  }
-};
-
-// Função para testar conexão (compatibilidade)
-export const testApiConnection = async () => {
-  try {
-    const response = await api.get('/health');
-    return {
-      success: true,
-      data: response.data
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-};
-
-// Função de login para obter token (compatibilidade)
-export const loginForToken = async (credentials) => {
-  try {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.success) {
-      const token = response.data.data.access_token;
-      localStorage.setItem('authToken', token);
-      return token;
-    }
-    throw new Error('Login falhou');
-  } catch (error) {
-    console.error('Erro no login para token:', error);
-    throw error;
-  }
-};
 
 // Classe de serviços de autenticação
 export class AuthService {
@@ -216,3 +197,76 @@ export const checkApiHealth = async () => {
 };
 
 export default api;
+EOF
+
+# 2. Criar arquivo de configuração de ambiente
+echo "🔧 Criando arquivo .env para frontend..."
+if [ ! -f ".env" ]; then
+    cat > .env << 'EOF'
+# API Configuration
+REACT_APP_API_URL=http://localhost:3008/api
+
+# Development
+REACT_APP_ENV=development
+REACT_APP_DEBUG=true
+
+# App Info
+REACT_APP_NAME=Sistema Erlene Advogados
+REACT_APP_VERSION=1.0.0
+EOF
+    echo "✅ Arquivo .env criado"
+else
+    echo "⚠️ Arquivo .env já existe - verificando configurações..."
+    
+    if ! grep -q "REACT_APP_API_URL" .env; then
+        echo "REACT_APP_API_URL=http://localhost:3008/api" >> .env
+        echo "✅ REACT_APP_API_URL adicionado ao .env"
+    fi
+fi
+
+# 3. Testar conexão com API
+echo "🧪 Testando conexão com backend..."
+cat > test-api-connection.js << 'EOF'
+const axios = require('axios');
+
+async function testConnection() {
+  try {
+    console.log('🔍 Testando conexão com backend Node.js...');
+    
+    const response = await axios.get('http://localhost:3008/health', {
+      timeout: 5000
+    });
+    
+    if (response.data.success) {
+      console.log('✅ Backend Node.js está rodando!');
+      console.log('📊 Status:', response.data);
+    } else {
+      console.log('⚠️ Backend respondeu mas com erro');
+    }
+  } catch (error) {
+    console.log('❌ Backend Node.js não está rodando!');
+    console.log('💡 Execute: cd ../backend && npm run dev');
+    console.log('🔗 URL esperada: http://localhost:3008');
+  }
+}
+
+testConnection();
+EOF
+
+node test-api-connection.js
+rm test-api-connection.js
+
+echo "✅ API Service criado com sucesso!"
+echo ""
+echo "📁 Arquivos criados:"
+echo "   - src/services/api.js (serviço de API para Node.js)"
+echo "   - .env (configurações de ambiente)"
+echo ""
+echo "🔧 Configurações:"
+echo "   - API URL: http://localhost:3008/api"
+echo "   - Timeout: 10 segundos"
+echo "   - Headers automáticos com JWT"
+echo ""
+echo "📋 Próximo script: 207-update-login-component.sh"
+echo ""
+echo "⚠️ IMPORTANTE: Certifique-se que o backend está rodando antes do próximo script!"

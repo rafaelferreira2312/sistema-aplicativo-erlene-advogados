@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>Clear Storage</title></head>
+<body>
+<h2>Limpando dados antigos...</h2>
+<script>
+localStorage.clear();
+sessionStorage.clear();
+console.log('Storage limpo');
+alert('Dados antigos removidos! Clique OK para ir ao login.');
+window.location.href = '/login';
+</script>
+</body>
+</html>
